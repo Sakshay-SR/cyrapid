@@ -1,39 +1,64 @@
-import PasswordIcon from 'components/Icons/PasswordIcon'
-import SigmaredLogo from '../../assets/company-logo.png'
-import EmailIcon from 'components/Icons/EmailIcon'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Bounce, toast, ToastContainer } from 'react-toastify'
-import DotLoader from 'react-spinners/DotLoader'
+import PasswordIcon from "components/Icons/PasswordIcon";
+import SigmaredLogo from "../../assets/company-logo.png";
+import EmailIcon from "components/Icons/EmailIcon";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Bounce, toast, ToastContainer } from "react-toastify";
+import DotLoader from "react-spinners/DotLoader";
 export default function LoginPage() {
-  const navigate = useNavigate()
-  const [checked, setChecked] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [type, setType] = useState('password')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const handleLogin = () => {
-    setLoading(true)
-    if (email === 'admin@sigmared.ai' && password === 'admin') {
-      setTimeout(() => {
-        setLoading(false)
-        localStorage.setItem('auth', 'true')
-        navigate('/')
-      }, 2000)
-    } else {
-      toast.error('Please verify your email or password!', {
-        position: 'bottom-right',
+  const navigate = useNavigate();
+  const [checked, setChecked] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [type, setType] = useState("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const handleLogin = async () => {
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        `http://20.199.19.114:8500/dashboard/get_authenticated/?user_id=${encodeURIComponent(
+          email,
+        )}&password=${encodeURIComponent(password)}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // Assuming the API returns a JSON object with a key "authenticated" that is true if credentials are valid
+        if (data) {
+          localStorage.setItem("user_id", email);
+          localStorage.setItem("client_id", "coforge");
+          navigate("/");
+        } else {
+          throw new Error("Invalid credentials");
+        }
+      } else {
+        throw new Error("Network response was not ok");
+      }
+    } catch (error) {
+      toast.error("Please verify your email or password!", {
+        position: "bottom-right",
         autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
-        theme: 'light',
-        transition: Bounce
-      })
+        theme: "light",
+        transition: Bounce, // Ensure the Bounce transition is properly imported if it's being used
+      });
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+
   return (
     <div className="flex h-screen w-screen  items-center justify-center  bg-[#F5F6FA]">
       <ToastContainer />
@@ -50,7 +75,7 @@ export default function LoginPage() {
             className="min-w-60 bg-[#e8f0fe]  focus:outline-none "
             placeholder="Email"
             onChange={(e) => {
-              setEmail(e.target.value)
+              setEmail(e.target.value);
             }}
           />
         </div>
@@ -61,7 +86,7 @@ export default function LoginPage() {
             className="min-w-60 bg-[#e8f0fe]  focus:outline-none "
             placeholder="Password"
             onChange={(e) => {
-              setPassword(e.target.value)
+              setPassword(e.target.value);
             }}
           />
         </div>
@@ -72,11 +97,11 @@ export default function LoginPage() {
             checked={checked}
             onChange={() => {
               if (!checked) {
-                setType('text')
+                setType("text");
               } else {
-                setType('password')
+                setType("password");
               }
-              setChecked(!checked)
+              setChecked(!checked);
             }}
           />
           Show password
@@ -85,9 +110,9 @@ export default function LoginPage() {
           className="flex w-full items-center justify-center rounded-lg bg-[#1a73e8] p-4 text-center text-white"
           onClick={handleLogin}
         >
-          {loading ? <DotLoader color="#36d7b7" size={20} /> : 'LOGIN'}
+          {loading ? <DotLoader color="#36d7b7" size={20} /> : "LOGIN"}
         </button>
       </div>
     </div>
-  )
+  );
 }

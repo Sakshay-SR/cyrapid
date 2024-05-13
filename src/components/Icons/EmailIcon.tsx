@@ -1,4 +1,10 @@
-export default function EmailIcon({ width, height, fill }) {
+type Props = {
+  width: string;
+  height: string;
+  fill: string;
+};
+
+const EmailIcon: React.FC<Props> = ({ width, height, fill }) => {
   return (
     <svg
       width={width}
@@ -21,3 +27,5 @@ export default function EmailIcon({ width, height, fill }) {
     </svg>
   )
 }
+
+export default EmailIcon;

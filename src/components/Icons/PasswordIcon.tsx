@@ -1,6 +1,12 @@
-import React from 'react'
+import React from "react";
 
-export default function PasswordIcon({ width, height, fill }) {
+type Props = {
+  width: string;
+  height: string;
+  fill: string;
+};
+
+const PasswordIcon: React.FC<Props> = ({ width, height, fill }) => {
   return (
     <svg
       width={width}
@@ -20,5 +26,6 @@ export default function PasswordIcon({ width, height, fill }) {
         fill={fill}
       />
     </svg>
-  )
-}
+  );
+};
+export default PasswordIcon;

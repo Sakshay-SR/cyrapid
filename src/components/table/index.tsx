@@ -125,9 +125,9 @@ const SimpleTable: React.FC = () => {
           </tbody>
         </table>
         <button
-          className="flex mx-auto items-center justify-center rounded-lg bg-[#1a73e8] p-4 text-center font-bold text-white mt-2"
+          className="mt-6 flex mx-auto items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center text-white font-bold hover:bg-blue-700"
         >
-          Connect Human Assistant: contact@sigmared.ai
+          Connect Human Assistant
         </button>
       </div>
     </div>

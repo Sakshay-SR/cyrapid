@@ -58,7 +58,7 @@ const tableData: RowData[] = [
 
 const SimpleTable: React.FC = () => {
   return (
-    <div className="flex h-screen w-screen justify-center bg-[#F5F6FA]">
+    <div className="flex h-full w-full justify-center bg-[#F5F6FA]">
       <div className="relative w-full overflow-x-auto p-5">
         <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
           <thead className="bg-gray-200 text-xs uppercase text-gray-900">

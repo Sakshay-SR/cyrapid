@@ -142,7 +142,7 @@ export default function CreateProject() {
   };
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-[#F5F6FA]">
+    <div className="flex h-full w-full items-center justify-center bg-[#F5F6FA]">
       <div className="w-full max-w-3xl rounded-lg bg-white p-8 shadow-md">
         {!showTable ? (
           <div className="w-full">
@@ -178,7 +178,7 @@ export default function CreateProject() {
             <div className="my-5 grid grid-cols-2 gap-8">
               <div>
                 <h3 className="mb-2 text-lg font-semibold text-gray-700">
-                  Policy/Process Document
+                  Policy and Process Document
                 </h3>
                 <input
                   type="file"
@@ -203,7 +203,7 @@ export default function CreateProject() {
               </div>
               <div>
                 <h3 className="mb-2 text-lg font-semibold text-gray-700">
-                  Response Document
+                  Assessment Workbook
                 </h3>
                 <input
                   type="file"
@@ -271,7 +271,13 @@ export default function CreateProject() {
             </button>
           </div>
         ) : (
-          <div className="mt-10 w-full">
+          <div className="mt-5 w-full">
+            <button
+              onClick={() => setShowTable(false)}
+              className="flex items-center justify-center p-2 rounded-lg bg-gray-500 text-center text-white font-bold hover:bg-gray-700"
+            >
+              Back
+            </button>
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr>
@@ -310,7 +316,7 @@ export default function CreateProject() {
               <thead>
                 <tr>
                   <th className="border-b-2 p-4 text-lg">
-                    Response Document Name
+                  Assessment Workbook Name
                   </th>
                   <th className="border-b-2 p-4 text-lg">Actions</th>
                 </tr>

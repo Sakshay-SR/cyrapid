@@ -1,5 +1,11 @@
 > Cybermeda @Sigmared
 ```
+
+Node Version v.20.11.1
+Npm Version 10.2.4
+pnpm version 9.1.0
+
+We are using pnpm to run this project.
 please install pnpm using npm. [Note. pnpm is much faster and efficient than npm]
 1. npm install -g pnpm
 2. pnpm install

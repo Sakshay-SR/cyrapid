@@ -1,6 +1,6 @@
-import PasswordIcon from 'components/Icons/PasswordIcon';
+import PasswordIcon from 'components/Common/Icons/PasswordIcon';
 import SigmaredLogo from '../../assets/company-logo.png';
-import EmailIcon from 'components/Icons/EmailIcon';
+import EmailIcon from 'components/Common/Icons/EmailIcon';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
@@ -63,7 +63,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-screen flex-col">
-      <div className="flex flex-grow flex-col items-center justify-center bg-[#F5F6FA]">
+      <div className="flex grow flex-col items-center justify-center bg-[#F5F6FA]">
         <ToastContainer />
         <div className="mx-auto flex w-fit flex-col items-center justify-center gap-4 rounded-lg bg-white px-20 py-4">
           <img src={SigmaredLogo} width="300" className="mb-5" alt="Logo" />

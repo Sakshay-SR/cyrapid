@@ -1,82 +1,82 @@
-import React, { useState } from "react";
-import DotLoader from "react-spinners/DotLoader";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import DotLoader from 'react-spinners/DotLoader';
+import { useNavigate } from 'react-router-dom';
 
 export default function CreateProject() {
   const navigate = useNavigate();
   const [policyFiles, setPolicyFiles] = useState<File[]>([]);
   const [responseFile, setResponseFile] = useState<File | undefined>();
   const [showTable, setShowTable] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [projectName, setProjectName] = useState("");
-  const [projectDescription, setProjectDescription] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
+  const [projectName, setProjectName] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePolicyFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setPolicyFiles((prev) => [...prev, ...files]);
-    setErrorMessage("");
+    setErrorMessage('');
   };
 
   const handleResponseFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setResponseFile(e.target.files[0]);
     }
-    setErrorMessage("");
+    setErrorMessage('');
   };
 
   const handleUpload = () => {
     if (!policyFiles.length || !responseFile) return;
     setShowTable(true); // Toggle table display on submit
-    setErrorMessage("");
+    setErrorMessage('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage("");
+    setErrorMessage('');
     setIsLoading(true);
 
-    if (projectName.trim() === "") {
-      setErrorMessage("Project name is required.");
+    if (projectName.trim() === '') {
+      setErrorMessage('Project name is required.');
       return;
     }
 
     // Check if files are uploaded
     if (policyFiles.length === 0 || !responseFile) {
-      setErrorMessage("All files must be uploaded.");
+      setErrorMessage('All files must be uploaded.');
       return;
     }
 
     const formData = new FormData();
     formData.append(
-      "client_id",
-      localStorage.getItem("client_id") || "coforge",
+      'client_id',
+      localStorage.getItem('client_id') || 'coforge',
     );
     formData.append(
-      "user_id",
-      localStorage.getItem("user_id") || "admin@sigmared.ai",
+      'user_id',
+      localStorage.getItem('user_id') || 'admin@sigmared.ai',
     );
-    formData.append("assesment_name", encodeURIComponent(projectName));
+    formData.append('assesment_name', encodeURIComponent(projectName));
     formData.append(
-      "details",
-      encodeURIComponent(projectDescription || "Details not provided"),
+      'details',
+      encodeURIComponent(projectDescription || 'Details not provided'),
     );
 
     // Append policy documents
     policyFiles.forEach((file) => {
-      formData.append("policy_documents", file, file.name);
+      formData.append('policy_documents', file, file.name);
     });
 
     // Append response document
-    formData.append("response_documents", responseFile, responseFile.name);
+    formData.append('response_documents', responseFile, responseFile.name);
 
     try {
       const response = await fetch(
-        "http://20.199.19.114:8500/dashboard/create_assesment/",
+        'https://2w24txr2ecpc36zqwk4v4vdmva0ohppf.lambda-url.eu-north-1.on.aws/dashboard/create_assesment/',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            Accept: "application/json",
+            Accept: 'application/json',
           },
           body: formData,
         },
@@ -88,10 +88,10 @@ export default function CreateProject() {
 
       const result = await response.json();
       console.log(result); // Log or process result as needed
-      navigate("/assessment-table"); // Navigate on successful submission
+      navigate('/assessment-table'); // Navigate on successful submission
     } catch (error) {
-      console.error("Failed to create assessment:", error);
-      setErrorMessage("Failed to submit the assessment. Please try again.");
+      console.error('Failed to create assessment:', error);
+      setErrorMessage('Failed to submit the assessment. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -100,9 +100,9 @@ export default function CreateProject() {
   const handleUpdateFile = (index: number) => {
     // Implement a function to handle updating individual files
     // This could involve triggering a hidden file input or other UI behavior
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "application/pdf";
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'application/pdf';
     fileInput.onchange = (e) => {
       const input = e.target as HTMLInputElement;
       if (input.files && input.files.length > 0) {
@@ -113,15 +113,15 @@ export default function CreateProject() {
       }
     };
     fileInput.click();
-    setErrorMessage("");
+    setErrorMessage('');
   };
 
   const handleResponseUpdateFile = () => {
     // Implement a function to handle updating individual files
     // This could involve triggering a hidden file input or other UI behavior
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = ".csv";
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.csv';
     fileInput.onchange = (e) => {
       const input = e.target as HTMLInputElement;
       if (input.files && input.files.length > 0) {
@@ -130,19 +130,19 @@ export default function CreateProject() {
       }
     };
     fileInput.click();
-    setErrorMessage("");
+    setErrorMessage('');
   };
 
   const handleRemoveFile = (index: number) => {
     if (policyFiles.length > 1) {
       setPolicyFiles((prev) => prev.filter((_, i) => i !== index));
     } else {
-      setErrorMessage("At least one file is required.");
+      setErrorMessage('At least one file is required.');
     }
   };
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#F5F6FA]">
+    <div className="flex size-full items-center justify-center bg-[#F5F6FA]">
       <div className="w-full max-w-3xl rounded-lg bg-white p-8 shadow-md">
         {!showTable ? (
           <div className="w-full">
@@ -187,7 +187,7 @@ export default function CreateProject() {
                   onChange={handlePolicyFileUpload}
                   className="mb-2 w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700"
                 />
-                <div className="flex justify-center items-center w-full h-20 border-2 border-dashed border-gray-300 text-gray-400 overflow-y-auto p-3">
+                <div className="flex h-20 w-full items-center justify-center overflow-y-auto border-2 border-dashed border-gray-300 p-3 text-gray-400">
                   {policyFiles.length > 0 ? (
                     <ul className="w-full">
                       {policyFiles.map((file, index) => (
@@ -211,8 +211,8 @@ export default function CreateProject() {
                   onChange={handleResponseFileUpload}
                   className="mb-2 w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700"
                 />
-                <div className="flex justify-center items-center w-full h-20 border-2 border-dashed border-gray-300 text-gray-400">
-                  {responseFile ? responseFile.name : "No File Chosen"}
+                <div className="flex h-20 w-full items-center justify-center border-2 border-dashed border-gray-300 text-gray-400">
+                  {responseFile ? responseFile.name : 'No File Chosen'}
                 </div>
               </div>
             </div>
@@ -265,7 +265,7 @@ export default function CreateProject() {
 
             <button
               onClick={handleUpload}
-              className="mt-6 w-full flex mx-auto items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center text-white font-bold hover:bg-blue-700"
+              className="mx-auto mt-6 flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
             >
               Upload Documents
             </button>
@@ -274,7 +274,7 @@ export default function CreateProject() {
           <div className="mt-5 w-full">
             <button
               onClick={() => setShowTable(false)}
-              className="flex items-center justify-center p-2 rounded-lg bg-gray-500 text-center text-white font-bold hover:bg-gray-700"
+              className="flex items-center justify-center rounded-lg bg-gray-500 p-2 text-center font-bold text-white hover:bg-gray-700"
             >
               Back
             </button>
@@ -316,7 +316,7 @@ export default function CreateProject() {
               <thead>
                 <tr>
                   <th className="border-b-2 p-4 text-lg">
-                  Assessment Workbook Name
+                    Assessment Workbook Name
                   </th>
                   <th className="border-b-2 p-4 text-lg">Actions</th>
                 </tr>
@@ -338,9 +338,9 @@ export default function CreateProject() {
             <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="mt-6 w-full flex mx-auto items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center text-white font-bold hover:bg-blue-700"
+              className="mx-auto mt-6 flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
             >
-              {isLoading ? <DotLoader color="#36d7b7" size={20} /> : "Submit"}
+              {isLoading ? <DotLoader color="#36d7b7" size={20} /> : 'Submit'}
             </button>
           </div>
         )}

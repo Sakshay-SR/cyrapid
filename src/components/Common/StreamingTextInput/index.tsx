@@ -1,0 +1,58 @@
+import { TextField } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+
+type StreamingTextInputProps = {
+  targetText: string;
+  speed: number;
+  handleChange:
+    | React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
+    | undefined;
+  label: string;
+  placeholder: string;
+  width?: string;
+};
+function StreamingTextInput({
+  targetText,
+  speed,
+  handleChange,
+  label,
+  placeholder,
+  width,
+}: StreamingTextInputProps) {
+  const [text, setText] = useState('');
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (index < targetText.length) {
+        setText(targetText.slice(0, index + 1));
+        setIndex(index + 1);
+      } else {
+        clearInterval(interval);
+      }
+    }, speed); // Change this value to adjust the speed of the streaming effect
+
+    return () => clearInterval(interval);
+  }, [index, targetText, speed]);
+
+  return (
+    <TextField
+      type="text"
+      value={text}
+      label={label}
+      placeholder={placeholder}
+      variant="standard"
+      sx={{ width: width || '100%' }}
+      InputLabelProps={{
+        shrink: true,
+      }}
+      onChange={(e) => {
+        setText(e.target.value);
+        if (handleChange !== undefined) handleChange(e);
+      }}
+      multiline
+    />
+  );
+}
+
+export default StreamingTextInput;

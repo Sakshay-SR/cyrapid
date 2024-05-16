@@ -20,11 +20,12 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        `https://2w24txr2ecpc36zqwk4v4vdmva0ohppf.lambda-url.eu-north-1.on.aws/dashboard/get_authenticated/?user_id=${encodeURIComponent(
+        `https://2w24txr2ecpc36zqwk4v4vdmva0ohppf.lambda-url.eu-north-1.on.aws/dashboard/get_authenticated_cymeda/?user_id=${encodeURIComponent(
           email,
         )}&password=${encodeURIComponent(password)}`,
         {
-          method: 'GET',
+          method: 'POST',
+          body: {},
           headers: {
             Accept: 'application/json',
           },

@@ -5,9 +5,8 @@ import MainLayout from './layout/mainLayout';
 import LoginPage from './LoginPage';
 import PrivateRoutes from './PrivateRoutes';
 import CreateProject from './CreateProject';
-import SimpleTable from './Table';
-import NewAssessmentComponent from './ComplianceAssessment/newAssessment';
 import AssessmentTable from './ComplianceAssessment/AssessmentTable';
+import SimpleTable from './table';
 
 export const router = createBrowserRouter([
   {

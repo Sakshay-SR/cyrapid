@@ -20,7 +20,7 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        `http://20.199.19.114:8500/dashboard/get_authenticated/?user_id=${encodeURIComponent(
+        `https://2w24txr2ecpc36zqwk4v4vdmva0ohppf.lambda-url.eu-north-1.on.aws/dashboard/get_authenticated/?user_id=${encodeURIComponent(
           email,
         )}&password=${encodeURIComponent(password)}`,
         {

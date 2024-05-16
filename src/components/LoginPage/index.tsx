@@ -38,6 +38,7 @@ export default function LoginPage() {
         if (data) {
           localStorage.setItem('user_id', email);
           localStorage.setItem('client_id', 'coforge');
+          localStorage.setItem('auth', 'true');
           navigate('/');
         } else {
           throw new Error('Invalid credentials');

@@ -1,8 +1,10 @@
+import { useAuth0 } from '@auth0/auth0-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { logout } = useAuth0();
   return (
     <div className="flex size-full items-center justify-center bg-[#F5F6FA]">
       <div className="flex flex-col items-center justify-center rounded-lg bg-white p-10 font-bold">
@@ -13,7 +15,7 @@ export default function HomePage() {
           <div className="rounded-lg bg-[#D946EF] p-20 ">03</div>
           <div className="rounded-lg bg-[#D946EF] p-20 ">04</div>
         </div> */}
-        <div className="flex flex-col items-stretch justify-center ">
+        <div className="grid grid-cols-1  ">
           <button
             className="mx-auto mt-6 flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
             onClick={() => {
@@ -29,6 +31,14 @@ export default function HomePage() {
             }}
           >
             Compliance Assessment
+          </button>
+          <button
+            className="col-span-1 mx-auto mt-6 flex items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
+            onClick={() => {
+              logout();
+            }}
+          >
+            Logout
           </button>
         </div>
       </div>

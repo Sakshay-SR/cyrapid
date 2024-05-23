@@ -4,10 +4,10 @@ import React, { useEffect, useState } from 'react';
 type StreamingTextInputProps = {
   targetText: string;
   speed: number;
-  handleChange:
+  handleChange?:
     | React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>
     | undefined;
-  label: string;
+  label?: string;
   placeholder: string;
   width?: string;
 };
@@ -39,7 +39,7 @@ function StreamingTextInput({
     <TextField
       type="text"
       value={text}
-      label={label}
+      label={label !== undefined ? label : undefined}
       placeholder={placeholder}
       variant="standard"
       sx={{ width: width || '100%' }}

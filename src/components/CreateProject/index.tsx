@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import DotLoader from 'react-spinners/DotLoader';
 import { useNavigate } from 'react-router-dom';
+import { createAssessment } from 'api/dashboard';
+import { useAuth0 } from '@auth0/auth0-react';
+
 
 export default function CreateProject() {
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
   const [policyFiles, setPolicyFiles] = useState<File[]>([]);
   const [responseFile, setResponseFile] = useState<File | undefined>();
   const [showTable, setShowTable] = useState(false);
@@ -48,19 +52,19 @@ export default function CreateProject() {
     }
 
     const formData = new FormData();
-    formData.append(
-      'client_id',
-      localStorage.getItem('client_id') || 'coforge',
-    );
-    formData.append(
-      'user_id',
-      localStorage.getItem('user_id') || 'admin@sigmared.ai',
-    );
-    formData.append('assesment_name', encodeURIComponent(projectName));
-    formData.append(
-      'details',
-      encodeURIComponent(projectDescription || 'Details not provided'),
-    );
+    // formData.append(
+    //   'client_id',
+    //   localStorage.getItem('client_id') || 'coforge',
+    // );
+    // formData.append(
+    //   'user_id',
+    //   localStorage.getItem('user_id') || 'admin@sigmared.ai',
+    // );
+    // formData.append('assesment_name', encodeURIComponent(projectName));
+    // formData.append(
+    //   'details',
+    //   encodeURIComponent(projectDescription || 'Details not provided'),
+    // );
 
     // Append policy documents
     policyFiles.forEach((file) => {
@@ -68,27 +72,17 @@ export default function CreateProject() {
     });
 
     // Append response document
-    formData.append('response_documents', responseFile, responseFile.name);
+    formData.append('response_document', responseFile, responseFile.name);
 
     try {
-      const response = await fetch(
-        'https://2w24txr2ecpc36zqwk4v4vdmva0ohppf.lambda-url.eu-north-1.on.aws/dashboard/create_assesment/',
-        {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-          },
-          body: formData,
-        },
+      const res = await createAssessment(
+        formData,
+        token,
+        projectName,
+        projectDescription,
       );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log(result); // Log or process result as needed
-      navigate('/assessment-table'); // Navigate on successful submission
+      console.log(res);
+      navigate('/'); // Navigate on successful submission
     } catch (error) {
       console.error('Failed to create assessment:', error);
       setErrorMessage('Failed to submit the assessment. Please try again.');

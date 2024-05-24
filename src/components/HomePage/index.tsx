@@ -1,10 +1,23 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAssessment } from 'api/dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
+
 export default function HomePage() {
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
   const { logout, user } = useAuth0();
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const client_id = localStorage.getItem('client_id');
+      const res = await getAssessment(client_id, token);
+      console.log(res, "worked");
+    };
+    fetchData();
+  }, []);
+
   return (
     <div className="flex size-full items-center justify-center bg-[#F5F6FA]">
       <div className="flex h-3/4 w-1/4 flex-col items-center justify-between gap-4 rounded-lg bg-white p-10 font-bold">

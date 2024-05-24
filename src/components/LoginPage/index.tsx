@@ -1,12 +1,12 @@
-import PasswordIcon from 'components/Common/Icons/PasswordIcon';
-import SigmaredLogo from '../../assets/company-logo.png';
-import EmailIcon from 'components/Common/Icons/EmailIcon';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Bounce, toast, ToastContainer } from 'react-toastify';
-import DotLoader from 'react-spinners/DotLoader';
-import Footer from 'components/layout/footer';
-import { useAuth0 } from '@auth0/auth0-react';
+import PasswordIcon from "components/Common/Icons/PasswordIcon";
+import SigmaredLogo from "../../assets/company-logo.png";
+import EmailIcon from "components/Common/Icons/EmailIcon";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Bounce, toast, ToastContainer } from "react-toastify";
+import DotLoader from "react-spinners/DotLoader";
+import Footer from "components/layout/footer";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -15,12 +15,22 @@ export default function LoginPage() {
   // const [type, setType] = useState('password');
   // const [email, setEmail] = useState('');
   // const [password, setPassword] = useState('');
-  const { loginWithPopup, isAuthenticated } = useAuth0();
+  const { loginWithPopup, isAuthenticated, getIdTokenClaims } = useAuth0();
   useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const response = await getIdTokenClaims();
+        const token = response?.__raw;
+        localStorage.setItem('token', token);
+      } catch (error) {
+        console.error(error);
+      }
+    };
     if (isAuthenticated) {
-      navigate('/');
+      fetchToken();
+      navigate("/");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, getIdTokenClaims]);
 
   async function handleLogin() {
     // setLoading(true);

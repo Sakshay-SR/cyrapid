@@ -1,12 +1,105 @@
-export async function getPreAssesReport(client_id: string, user_id: string) {
+const base_url = 'https://cy-meda.azurewebsites.net';
+
+export async function getPreAssesReport(token: string) {
+  const res = await fetch(`${base_url}/dashboard/get_post_assesment_reports/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
+    },
+    body: JSON.stringify({}), // Assuming you might want to send an empty object
+  });
+
+  const resbody = await res.json();
+
+  return resbody; // Return the parsed JSON response
+}
+
+export async function getPostAssesReport(
+  client_id: string,
+  user_id: string,
+  token: string,
+) {
   const res = await fetch(
-    `https://2w24txr2ecpc36zqwk4v4vdmva0ohppf.lambda-url.eu-north-1.on.aws/dashboard/get_post_assesment_reports?client_id=${client_id}&user_id=${user_id}`,
+    `${base_url}/dashboard/get_pre_assesment_reports?client_id=${client_id}&user_id=${user_id}`,
     {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
       body: {},
     },
   );
   const resbody = await res.json();
 
   return JSON.parse(resbody.body);
+}
+
+export async function createAssessment(
+  formData: FormData,
+  token: string | null,
+  projectName: string,
+  projectDescription: string,
+) {
+  try {
+    const clientId = localStorage.getItem('client_id') || 'coforge';
+    const userId = localStorage.getItem('user_id') || 'admin@sigmared.ai';
+    const url = `${base_url}/dashboard/create_assesment/?client_id=${encodeURIComponent(
+      clientId,
+    )}&user_id=${encodeURIComponent(
+      userId,
+    )}&assesment_name=${encodeURIComponent(
+      projectName,
+    )}&details=${encodeURIComponent(
+      projectDescription || 'Details not provided',
+    )}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`, // Token for authentication
+      },
+      body: formData, // FormData object containing the files and other data
+    });
+
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result; // Assuming the response is already in JSON format
+  } catch (error) {
+    console.error('Error in createAssessment:', error);
+    throw error;
+  }
+}
+
+export async function getAssessment(client_id: string, token: string) {
+  const response = await fetch(
+    `${base_url}/dashboard/get_all_assessments/?client_id=${client_id}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+      body: {},
+    },
+  );
+  const result = await response.json();
+  return JSON.parse(result.body);
+}
+
+export async function getSaveContinue(body: object, token: string) {
+  const response = await fetch(`${base_url}/dashboard/save_table`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
+    },
+    body: body,
+  });
+  const result = await response.json();
+  return JSON.parse(result.body);
 }

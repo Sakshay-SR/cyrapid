@@ -22,6 +22,8 @@ import { BarLoader, PropagateLoader, PulseLoader } from "react-spinners";
 import StreamingTextInput from "components/Common/StreamingTextInput";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
+import * as htmlToImage from 'html-to-image';
+import jsPDF from 'jspdf';
 
 type GetPreAssesReportType = {
   "Assessee Comments": any;
@@ -72,6 +74,8 @@ export default function AssessmentTable() {
   const [checked, setChecked] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [tableLoading, setTableLoading] = React.useState(false);
+  const contentRef = React.useRef(null);
+
   const HandleSubmitComplete = async () => {
     if (token && tableData) {
       const body = {
@@ -95,6 +99,50 @@ export default function AssessmentTable() {
       console.log(res);
     } else {
       console.log('No token and data');
+    }
+  };
+
+  const handlePrint = async () => {
+    const inputData = contentRef.current;
+    try {
+      const canvas = await htmlToImage.toCanvas(inputData, {
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
+        width: inputData.scrollWidth,
+        height: inputData.scrollHeight,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "px",
+        format: "a4",
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      let position = 0;
+      while (position < imgHeight) {
+        pdf.addImage(
+          imgData,
+          "PNG",
+          0,
+          -position,
+          pdfWidth,
+          imgHeight
+        );
+        position += pdfHeight;
+        if (position < imgHeight) {
+          pdf.addPage();
+        }
+      }
+
+      pdf.save("assessment_table.pdf");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
     }
   };
 
@@ -181,9 +229,9 @@ export default function AssessmentTable() {
           sx={{ mb: 2, mr: 2, backgroundColor: "#004ab9" }}
           // onClick={HandleSubmitComplete}
           variant="contained"
-          disabled
+          onClick={handlePrint}
         >
-          Save for Later
+          Save as Pdf
         </Button>
         <Button
           sx={{ mb: 2, backgroundColor: "#004ab9" }}
@@ -194,7 +242,7 @@ export default function AssessmentTable() {
           Save & Complete
         </Button>
       </div>
-      <TableContainer component={Paper} sx={{ width: "90%" }}>
+      <TableContainer component={Paper} sx={{ width: "90%", p:"10px" }} ref={contentRef}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead sx={{ backgroundColor: "#004ab9" }}>
             <TableRow>

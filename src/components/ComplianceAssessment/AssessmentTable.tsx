@@ -74,6 +74,7 @@ export default function AssessmentTable() {
   // const [newState, setNewState] = React.useState<ItemType[]>([]);
   const token = localStorage.getItem('token');
   const [certification, setCertification] = React.useState("")
+  const [domain, setDomain] = React.useState("")
   const { logout } = useAuth0();
   const [checked, setChecked] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -214,6 +215,8 @@ export default function AssessmentTable() {
                 id="demo-simple-select-standard"
                 label="Organizational Controls"
                 defaultValue={"Organizational Controls"}
+                value={domain}
+                onChange={(e)=>{setDomain(e.target.value)}}
               >
                 <MenuItem value={"Organizational Controls"}>
                   Organizational Controls

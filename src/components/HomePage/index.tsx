@@ -72,7 +72,9 @@ export default function HomePage() {
                 <div className="text-sm">{assessment.descriptions}</div>
                 <button
                   className="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 text-sm"
-                  onClick={() => navigate(`/compliance-assessment/new`)}
+                  onClick={() => {
+                    localStorage.setItem("assessment_name",assessment.assessment_name)
+                    navigate(`/compliance-assessment/new`)}}
                 >
                   CyberRisk and Compliance Assessment
                 </button>

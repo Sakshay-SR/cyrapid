@@ -89,6 +89,7 @@ export default function AssessmentTable() {
   const [loading, setLoading] = React.useState(false);
   const [tableLoading, setTableLoading] = React.useState(false);
   const contentRef = React.useRef(null);
+  const assessment_name = localStorage.getItem("assessment_name")
   // function obj) {
   //   const array = [];
   //   for (let key in obj) {
@@ -100,10 +101,11 @@ export default function AssessmentTable() {
   // }
 
   const HandleSubmitComplete = async () => {
+    
     if (token && tableData) {
       const body = {
         client_id: "coforge",
-        assessment_name: "sample assesment",
+        assessment_name: assessment_name,
         cyber_risk_table: {
           control_number: tableData?.["Control Number"],
           control_name: tableData?.["Control Name"],
@@ -124,7 +126,7 @@ export default function AssessmentTable() {
 
         const updateAssessmentBody = {
           status: "completed",
-          assessment_name: "sample assesment",
+          assessment_name: assessment_name,
           client_id: "coforge",
         };
 
@@ -150,7 +152,7 @@ export default function AssessmentTable() {
     if (token && tableData) {
       const body = {
         client_id: "coforge",
-        assessment_name: "sample assesment",
+        assessment_name: assessment_name,
         cyber_risk_table: {
           control_number: tableData?.["Control Number"],
           control_name: tableData?.["Control Name"],
@@ -171,7 +173,7 @@ export default function AssessmentTable() {
 
         const updateAssessmentBody = {
           status: "pending",
-          assessment_name: "sample assesment",
+          assessment_name: assessment_name,
           client_id: "coforge",
         };
 
@@ -254,7 +256,7 @@ export default function AssessmentTable() {
     const initializeData = async () => {
       setTableLoading(true);
       const client_id = "coforge";
-      const assessment_name = "sample assesment";
+      const assessment_name = assessment_name;
       const result = await fetchAssessmentStatus(
         client_id,
         assessment_name,

@@ -512,6 +512,13 @@ export default function AssessmentTable() {
                           value={
                             tableData?.["Assessee Comments"][number.toString()]
                           }
+                          onChange={(e) =>
+                            handleDataChange(
+                              number,
+                              "Assessee Comments",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Comment"
                           variant="standard"
                           InputLabelProps={{
@@ -547,6 +554,13 @@ export default function AssessmentTable() {
                             placeholder="Comment"
                             speed={10}
                             width="400px"
+                            handleChange={(e) =>
+                              handleDataChange(
+                                number,
+                                "Assessor Comments",
+                                e.target.value,
+                              )
+                            }
                             targetText={
                               checked && !loading
                                 ? tableData?.["Assessor Comments"][
@@ -559,11 +573,32 @@ export default function AssessmentTable() {
                       </StyledTableCell>
                       <StyledTableCell>
                         <FormControl fullWidth>
-                          <InputLabel id="label1">Select Option</InputLabel>
-                          <Select labelId="label1" label="Compliance">
-                            <MenuItem value="100">Compliant</MenuItem>
-                            <MenuItem value="50">Partially Compliant</MenuItem>
-                            <MenuItem value="0">Non Compliant</MenuItem>
+                          <InputLabel
+                            id={`compliance-category-label-${number}`}
+                          >
+                            Compliance
+                          </InputLabel>
+                          <Select
+                            labelId={`compliance-category-label-${number}`}
+                            value={
+                              tableData["Compliance Category"][number] || ""
+                            }
+                            onChange={(e) =>
+                              handleDataChange(
+                                number,
+                                "Compliance Category",
+                                e.target.value,
+                              )
+                            }
+                            label="Compliance"
+                          >
+                            <MenuItem value="Compliant">Compliant</MenuItem>
+                            <MenuItem value="Partially Compliant">
+                              Partially Compliant
+                            </MenuItem>
+                            <MenuItem value="Non-Compliant">
+                              Non Compliant
+                            </MenuItem>
                           </Select>
                         </FormControl>
                       </StyledTableCell>
@@ -583,12 +618,25 @@ export default function AssessmentTable() {
                       </StyledTableCell>
                       <StyledTableCell>
                         <FormControl fullWidth>
-                          <InputLabel id="label1">Select Option</InputLabel>
-                          <Select labelId="label1" label="Compliance">
-                            <MenuItem value="100">Critical</MenuItem>
-                            <MenuItem value="75">High</MenuItem>
-                            <MenuItem value="50">Medium</MenuItem>
-                            <MenuItem value="25">Low</MenuItem>
+                          <InputLabel id={`findings-category-label-${number}`}>
+                            Findings Category
+                          </InputLabel>
+                          <Select
+                            labelId={`findings-category-label-${number}`}
+                            value={tableData["Findings Category"][number] || ""}
+                            onChange={(e) =>
+                              handleDataChange(
+                                number,
+                                "Findings Category",
+                                e.target.value,
+                              )
+                            }
+                            label="Findings Category"
+                          >
+                            <MenuItem value="Critical">Critical</MenuItem>
+                            <MenuItem value="High">High</MenuItem>
+                            <MenuItem value="Medium">Medium</MenuItem>
+                            <MenuItem value="Low">Low</MenuItem>
                           </Select>
                         </FormControl>
                       </StyledTableCell>

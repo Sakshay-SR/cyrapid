@@ -92,7 +92,7 @@ export async function getAssessment(client_id: string, token: string) {
 }
 
 export async function getSaveContinue(body: object, token: string) {
-  const response = await fetch(`${base_url}/dashboard/save_table/`, {
+  const response = await fetch(`${base_url}/dashboard/save_table`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

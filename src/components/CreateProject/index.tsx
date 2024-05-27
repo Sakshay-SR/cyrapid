@@ -197,7 +197,7 @@ Setup Assessment
             <div className="my-5 grid grid-cols-2 gap-8">
               <div>
                 <h3 className="mb-2 text-lg font-semibold text-gray-700">
-                  Policy and Process Document
+                  Policy and Process Documents
                 </h3>
                 <input
                   type="file"

@@ -55,10 +55,10 @@ export default function HomePage() {
       </div>
       {/* INVENTORY  */}
       <div className="flex shadow-2xl h-auto w-1/4 flex-col items-center justify-between gap-4 rounded-lg bg-white p-10 font-bold">
-        <div className="flex flex-col gap-4">
+        {/* <div className="flex flex-col gap-4">
           <div className="text-2xl ">Assessment Inventory</div>
 
-        </div>
+        </div> */}
         <div className="grid grid-cols-1  ">
 
           <button
@@ -67,7 +67,7 @@ export default function HomePage() {
               navigate('/compliance-assessment/new');
             }}
           >
-            Compliance Assessment
+            CyberRisk and Compliance Assessment
           </button>
         </div>
       </div>

@@ -15,6 +15,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  SelectChangeEvent,
   TextField,
   styled,
 } from "@mui/material";
@@ -72,6 +73,7 @@ export default function AssessmentTable() {
   };
   // const [newState, setNewState] = React.useState<ItemType[]>([]);
   const token = localStorage.getItem('token');
+  const [certification, setCertification] = React.useState("")
   const { logout } = useAuth0();
   const [checked, setChecked] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -148,6 +150,9 @@ export default function AssessmentTable() {
     }
   };
 
+  const handleChange = (event: SelectChangeEvent) => {
+    setCertification(event.target.value)
+  }
   React.useEffect(() => {
     setTableLoading(true);
     const fetchData = async () => {
@@ -169,7 +174,7 @@ export default function AssessmentTable() {
   const numbers = Array.from({ length: 30 }, (_, index) => index);
   const navigate = useNavigate();
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center   bg-[#f8f9fd]">
+    <div className="flex h-screen w-screen flex-col items-center justify-start   bg-[#f8f9fd]">
       <div className="mb-10 absolute top-0 flex w-full items-center  justify-center bg-white">
         <div className="flex w-[90%] items-center justify-between">
           <div
@@ -178,7 +183,11 @@ export default function AssessmentTable() {
 
           >
             <div title="Back"><ArrowBackIosIcon onClick={() => {
-              navigate("/");
+              if (certification === "ISO 27001") { setCertification("") }
+              else {
+                navigate("/");
+              } 
+
             }} /></div>
 
             Cyber Risk Assessment
@@ -195,252 +204,275 @@ export default function AssessmentTable() {
         </div>
       </div>
 
-      <div className="flex w-[90%] mt-28 items-start justify-center gap-20">
-        <FormControl fullWidth>
-          <InputLabel id="label1">Select Domain</InputLabel>
-          <Select
-            labelId="label1"
-            id="demo-simple-select-standard"
-            label="Organizational Controls"
-            defaultValue={"Organizational Controls"}
-          >
-            <MenuItem value={"Organizational Controls"}>
-              Organizational Controls
-            </MenuItem>
-            <MenuItem value={"People Controls"}>People Controls</MenuItem>
-            <MenuItem value={"Physical Controls"}>Physical Controls</MenuItem>
-            <MenuItem value={"Technological controls"}>
-              Technological controls
-            </MenuItem>
-          </Select>
-        </FormControl>
-      </div>
-      {/* CyRapid Buttons  */}
-      <div className="flex w-[90%] items-center justify-between gap-4 mt-10">
-        <div className="flex gap-4">
-        <Button
-          sx={{ mb: 2, backgroundColor: "#004ab9" }}
-          onClick={() => {
-            setChecked(!checked);
-            if (!checked) setLoading(true);
-          }}
-          variant="contained"
-        >
-          Use CyRapid AI
-        </Button>
-        <Button
-          sx={{ mb: 2, backgroundColor: "#004ab9" }}
-          onClick={HandleSubmitComplete}
-          disabled
-          variant="contained"
-        >
-          Save For Later
-        </Button>
-        <Button
-          sx={{ mb: 2, backgroundColor: "#004ab9" }}
-          onClick={HandleSubmitComplete}
-          disabled
-          variant="contained"
-        >
-          Save & Complete
-        </Button>
-        </div>
-        <Button
-          sx={{ mb: 2, backgroundColor: "#004ab9" }}
-          onClick={handlePrint}
-          variant="contained"
-        >
-          <DownloadIcon />
-          Save as Pdf
-        </Button>
-      </div>
-      <div></div>
-
-      <TableContainer component={Paper} sx={{ width: "90%" }} ref={contentRef}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead sx={{ backgroundColor: "#004ab9" }}>
-            <TableRow>
-
-              <TableCell
-                sx={{
-                  color: "#fff",
-                  fontSize: "20px",
-                  fontWeight: "600",
-                  padding: "1.5rem",
-                  width: "100%",
-                }}
-                colSpan={10}
+      {certification === "ISO 27001" ?
+        <>
+          <div className="flex w-[90%] mt-28 items-start justify-center gap-20">
+            <FormControl fullWidth>
+              <InputLabel id="label1">Select Domain</InputLabel>
+              <Select
+                labelId="label1"
+                id="demo-simple-select-standard"
+                label="Organizational Controls"
+                defaultValue={"Organizational Controls"}
               >
-
-
-                Cyber Risk Assessment Form
-
-
-              </TableCell>
-
-            </TableRow>
-          </TableHead>
-          <TableHead>
-            <TableRow
-              sx={{
-                whiteSpace: "nowrap",
-                color: "#fff",
-                fontSize: "20px",
-                fontWeight: "600",
-                padding: "1.5rem",
-              }}
+                <MenuItem value={"Organizational Controls"}>
+                  Organizational Controls
+                </MenuItem>
+                <MenuItem value={"People Controls"}>People Controls</MenuItem>
+                <MenuItem value={"Physical Controls"}>Physical Controls</MenuItem>
+                <MenuItem value={"Technological controls"}>
+                  Technological controls
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+          {/* CyRapid Buttons  */}
+          <div className="flex w-[90%] items-center justify-between gap-4 mt-10">
+            <div className="flex gap-4">
+              <Button
+                sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                onClick={() => {
+                  setChecked(!checked);
+                  if (!checked) setLoading(true);
+                }}
+                variant="contained"
+              >
+                Use CyRapid AI
+              </Button>
+              <Button
+                sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                onClick={HandleSubmitComplete}
+                disabled
+                variant="contained"
+              >
+                Save For Later
+              </Button>
+              <Button
+                sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                onClick={HandleSubmitComplete}
+                disabled
+                variant="contained"
+              >
+                Save & Complete
+              </Button>
+            </div>
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={handlePrint}
+              variant="contained"
             >
-              <TableColumnHeaders>Control Number</TableColumnHeaders>
-              <TableColumnHeaders>Control Name</TableColumnHeaders>
-              <TableColumnHeaders>Control Question</TableColumnHeaders>
-              <TableColumnHeaders>Assessee Comments </TableColumnHeaders>
-              <TableColumnHeaders>Assessor Comments</TableColumnHeaders>
-              <TableColumnHeaders>Compliance Category</TableColumnHeaders>
+              <DownloadIcon />
+              Save as Pdf
+            </Button>
+          </div>
+          <div></div>
 
-              <TableColumnHeaders>Findings</TableColumnHeaders>
-              <TableColumnHeaders>Findings Category</TableColumnHeaders>
-              <TableColumnHeaders>Recommendations</TableColumnHeaders>
-              <TableColumnHeaders>Remarks</TableColumnHeaders>
-            </TableRow>
-          </TableHead>
-          {tableData && (
-            <TableBody>
-              {numbers.map((number) => (
-                <TableRow
-                  key={number}
-                // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <StyledTableCell>
-                    {tableData?.["Control Number"][number.toString()]}
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    {tableData?.["Control Name"][number.toString()]}
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    {tableData?.["Control Question"][number.toString()]}
-                  </StyledTableCell>
+          <TableContainer component={Paper} sx={{ width: "90%" }} ref={contentRef}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <TableHead sx={{ backgroundColor: "#004ab9" }}>
+                <TableRow>
 
-                  <StyledTableCell>
-                    <TextField
-                      sx={{ width: "400px" }}
-                      type="text"
-                      value={
-                        tableData?.["Assessee Comments"][number.toString()]
-                      }
-                      placeholder="Comment"
-                      variant="standard"
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      multiline
-                    />
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    {loading ? (
-                      <div className="flex w-[400px] items-center justify-center px-6">
-                        <PropagateLoader color="#36d7b7" />
-                      </div>
-                    ) : (
-                      // <TextField
-                      //   sx={{ width: '400px' }}
-                      //   type="text"
-                      //   value={
-                      //     checked && !loading
-                      //       ? tableData?.['Assessor Comments'][
-                      //           number.toString()
-                      //         ]
-                      //       : ''
-                      //   }
-                      //   placeholder="Comment"
-                      //   variant="standard"
-                      //   InputLabelProps={{
-                      //     shrink: true,
-                      //   }}
-                      //   multiline
-                      // />
-                      <StreamingTextInput
-                        placeholder="Comment"
-                        speed={10}
-                        width="400px"
-                        targetText={
-                          checked && !loading
-                            ? tableData?.["Assessor Comments"][
-                            number.toString()
-                            ]
-                            : ""
-                        }
-                      />
-                    )}
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    <FormControl fullWidth>
-                      <InputLabel id="label1">Select Option</InputLabel>
-                      <Select labelId="label1" label="Compliance">
-                        <MenuItem value="100">Compliant</MenuItem>
-                        <MenuItem value="50">Partially Compliant</MenuItem>
-                        <MenuItem value="0">Non Compliant</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    <TextField
-                      sx={{ width: "400px" }}
-                      label="Findings"
-                      placeholder="Findings"
-                      variant="standard"
-                      value={tableData?.["Findings"][number.toString()]}
-                      disabled
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      multiline
-                    />
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    <FormControl fullWidth>
-                      <InputLabel id="label1">Select Option</InputLabel>
-                      <Select labelId="label1" label="Compliance">
-                        <MenuItem value="100">Critical</MenuItem>
-                        <MenuItem value="75">High</MenuItem>
-                        <MenuItem value="50">Medium</MenuItem>
-                        <MenuItem value="25">Low</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    <TextField
-                      label="Recommendations"
-                      value={tableData.Recommendations[number.toString()]}
-                      sx={{ width: "400px" }}
-                      variant="standard"
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      disabled
-                      multiline
-                    />
-                  </StyledTableCell>
-                  <StyledTableCell>
-                    <TextField
-                      label="Remarks"
-                      disabled
-                      variant="standard"
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                    />
-                  </StyledTableCell>
+                  <TableCell
+                    sx={{
+                      color: "#fff",
+                      fontSize: "20px",
+                      fontWeight: "600",
+                      padding: "1.5rem",
+                      width: "100%",
+                    }}
+                    colSpan={10}
+                  >
+
+
+                    Cyber Risk Assessment Form
+
+
+                  </TableCell>
+
                 </TableRow>
-              ))}
-            </TableBody>
+              </TableHead>
+              <TableHead>
+                <TableRow
+                  sx={{
+                    whiteSpace: "nowrap",
+                    color: "#fff",
+                    fontSize: "20px",
+                    fontWeight: "600",
+                    padding: "1.5rem",
+                  }}
+                >
+                  <TableColumnHeaders>Control Number</TableColumnHeaders>
+                  <TableColumnHeaders>Control Name</TableColumnHeaders>
+                  <TableColumnHeaders>Control Question</TableColumnHeaders>
+                  <TableColumnHeaders>Assessee Comments </TableColumnHeaders>
+                  <TableColumnHeaders>Assessor Comments</TableColumnHeaders>
+                  <TableColumnHeaders>Compliance Category</TableColumnHeaders>
+
+                  <TableColumnHeaders>Findings</TableColumnHeaders>
+                  <TableColumnHeaders>Findings Category</TableColumnHeaders>
+                  <TableColumnHeaders>Recommendations</TableColumnHeaders>
+                  <TableColumnHeaders>Remarks</TableColumnHeaders>
+                </TableRow>
+              </TableHead>
+              {tableData && (
+                <TableBody>
+                  {numbers.map((number) => (
+                    <TableRow
+                      key={number}
+                    // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <StyledTableCell>
+                        {tableData?.["Control Number"][number.toString()]}
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        {tableData?.["Control Name"][number.toString()]}
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        {tableData?.["Control Question"][number.toString()]}
+                      </StyledTableCell>
+
+                      <StyledTableCell>
+                        <TextField
+                          sx={{ width: "400px" }}
+                          type="text"
+                          value={
+                            tableData?.["Assessee Comments"][number.toString()]
+                          }
+                          placeholder="Comment"
+                          variant="standard"
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                          multiline
+                        />
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        {loading ? (
+                          <div className="flex w-[400px] items-center justify-center px-6">
+                            <PropagateLoader color="#36d7b7" />
+                          </div>
+                        ) : (
+                          // <TextField
+                          //   sx={{ width: '400px' }}
+                          //   type="text"
+                          //   value={
+                          //     checked && !loading
+                          //       ? tableData?.['Assessor Comments'][
+                          //           number.toString()
+                          //         ]
+                          //       : ''
+                          //   }
+                          //   placeholder="Comment"
+                          //   variant="standard"
+                          //   InputLabelProps={{
+                          //     shrink: true,
+                          //   }}
+                          //   multiline
+                          // />
+                          <StreamingTextInput
+                            placeholder="Comment"
+                            speed={10}
+                            width="400px"
+                            targetText={
+                              checked && !loading
+                                ? tableData?.["Assessor Comments"][
+                                number.toString()
+                                ]
+                                : ""
+                            }
+                          />
+                        )}
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <FormControl fullWidth>
+                          <InputLabel id="label1">Select Option</InputLabel>
+                          <Select labelId="label1" label="Compliance">
+                            <MenuItem value="100">Compliant</MenuItem>
+                            <MenuItem value="50">Partially Compliant</MenuItem>
+                            <MenuItem value="0">Non Compliant</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <TextField
+                          sx={{ width: "400px" }}
+                          label="Findings"
+                          placeholder="Findings"
+                          variant="standard"
+                          value={tableData?.["Findings"][number.toString()]}
+                          disabled
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                          multiline
+                        />
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <FormControl fullWidth>
+                          <InputLabel id="label1">Select Option</InputLabel>
+                          <Select labelId="label1" label="Compliance">
+                            <MenuItem value="100">Critical</MenuItem>
+                            <MenuItem value="75">High</MenuItem>
+                            <MenuItem value="50">Medium</MenuItem>
+                            <MenuItem value="25">Low</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <TextField
+                          label="Recommendations"
+                          value={tableData.Recommendations[number.toString()]}
+                          sx={{ width: "400px" }}
+                          variant="standard"
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                          disabled
+                          multiline
+                        />
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <TextField
+                          label="Remarks"
+                          disabled
+                          variant="standard"
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                        />
+                      </StyledTableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              )}
+            </Table>
+          </TableContainer>
+          {tableLoading && (
+            <div className="mt-10 flex h-20 w-[90%] flex-col items-center justify-center">
+              <PulseLoader color="#36d7b7" loading />
+            </div>
           )}
-        </Table>
-      </TableContainer>
-      {tableLoading && (
-        <div className="mt-10 flex h-20 w-[90%] flex-col items-center justify-center">
-          <PulseLoader color="#36d7b7" loading />
-        </div>
-      )}
+        </> : (<>
+          <div className="flex w-[90%] mt-28 items-start justify-center gap-20">
+            <FormControl fullWidth>
+              <InputLabel id="label1">Select Control Framework: </InputLabel>
+              <Select
+                labelId="label1"
+                id="demo-simple-select-standard"
+                label={"Control Framework"}
+                value={certification}
+                onChange={handleChange}
+              >
+                <MenuItem value={"ISO 27001"}>
+                  ISO 27001
+                </MenuItem>
+                <MenuItem value={"NIS2"} disabled>NIS2</MenuItem>
+                <MenuItem value={"CCPA"} disabled>CCPA</MenuItem>
+                <MenuItem value={"GDPR"} disabled>GDPR</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+        </>)}
     </div>
   );
 }

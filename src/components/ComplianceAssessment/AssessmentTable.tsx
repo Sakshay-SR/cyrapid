@@ -102,7 +102,7 @@ export default function AssessmentTable() {
   const HandleSubmitComplete = async () => {
     if (token && tableData) {
       const body = {
-        client_id: localStorage.getItem("client_id"),
+        client_id: "coforge",
         assessment_name: "sample assesment",
         cyber_risk_table: {
           control_number: tableData?.["Control Number"],
@@ -149,7 +149,7 @@ export default function AssessmentTable() {
   const HandleSubmitLater = async () => {
     if (token && tableData) {
       const body = {
-        client_id: localStorage.getItem("client_id"),
+        client_id: "coforge",
         assessment_name: "sample assesment",
         cyber_risk_table: {
           control_number: tableData?.["Control Number"],
@@ -253,7 +253,7 @@ export default function AssessmentTable() {
   React.useEffect(() => {
     const initializeData = async () => {
       setTableLoading(true);
-      const client_id = localStorage.getItem("client_id");
+      const client_id = "coforge";
       const assessment_name = "sample assesment";
       const result = await fetchAssessmentStatus(
         client_id,

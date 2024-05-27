@@ -14,7 +14,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const client_id = localStorage.getItem("client_id");
+      const client_id = "coforge";
       const res = await getAssessment(client_id, token);
       console.log(res, "worked");
       setAssessments(res?.result); // Assume res is an array of assessments
@@ -58,12 +58,12 @@ export default function HomePage() {
         <div className="text-2xl mb-4">Your Assessments</div>
         <div className="grid grid-cols-3 gap-4 w-full">
           {assessments.length > 0 ? (
-            assessments.map((assessment, index) => (
+            assessments.map((assessment:any, index) => (
               <div
                 key={index}
-                className="relative flex flex-col items-center justify-center rounded-lg bg-gray-100 p-4"
+                className="relative flex flex-col items-center justify-center rounded-lg bg-gray-100 px-4 py-12"
               >
-                <div className="absolute right-0 top-2 rounded-full bg-green-500 px-3 py-1 text-xs text-white">
+                <div className={`absolute right-1 top-2 rounded-full ${assessment.status==="created"?"bg-yellow-400":(assessment.status==="pending"?"bg-red-400":"bg-green-500")}  px-3 py-1 text-xs text-white`}>
                   {assessment.status}
                 </div>
                 <div className="text-lg font-semibold">
@@ -71,10 +71,10 @@ export default function HomePage() {
                 </div>
                 <div className="text-sm">{assessment.descriptions}</div>
                 <button
-                  className="mt-4 rounded-lg bg-blue-500 px-8 py-2 text-white hover:bg-blue-700 text-s"
+                  className="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 text-sm"
                   onClick={() => navigate(`/compliance-assessment/new`)}
                 >
-                  CyberRisk & Compliance Assessment
+                  CyberRisk and Compliance Assessment
                 </button>
               </div>
             ))
@@ -88,7 +88,7 @@ export default function HomePage() {
         <button
           className="flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
           onClick={() => {
-            navigate("/create-project");
+            navigate("/create-assessment");
           }}
         >
           Setup Assessment &nbsp;

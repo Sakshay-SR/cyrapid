@@ -49,7 +49,7 @@ export async function createAssessment(
       clientId,
     )}&user_id=${encodeURIComponent(
       userId,
-    )}&assesment_name=${encodeURIComponent(
+    )}&assessment_name=${encodeURIComponent(
       projectName,
     )}&details=${encodeURIComponent(
       projectDescription || 'Details not provided',

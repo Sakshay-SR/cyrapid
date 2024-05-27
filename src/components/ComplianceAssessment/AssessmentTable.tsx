@@ -89,6 +89,7 @@ export default function AssessmentTable() {
   const [loading, setLoading] = React.useState(false);
   const [tableLoading, setTableLoading] = React.useState(false);
   const contentRef = React.useRef(null);
+  const assessment_name = localStorage.getItem("assessment_name") || "sample assesment"
   // function obj) {
   //   const array = [];
   //   for (let key in obj) {
@@ -133,8 +134,8 @@ export default function AssessmentTable() {
     if (token && body) {
       setLoading(true);
       const body = {
-        client_id: localStorage.getItem('client_id'),
-        assessment_name: 'sample assesment',
+        client_id: "coforge",
+        assessment_name: assessment_name,
         cyber_risk_table: {
           control_number: tableData?.['Control Number'],
           control_name: tableData?.['Control Name'],
@@ -154,9 +155,9 @@ export default function AssessmentTable() {
         toast.success('Data saved successfully!');
 
         const updateAssessmentBody = {
-          status: 'completed',
-          assessment_name: 'sample assesment',
-          client_id: 'coforge',
+          status: "completed",
+          assessment_name: assessment_name,
+          client_id: "coforge",
         };
 
         const updateAssessmentResponse = await updateAssessment(
@@ -183,8 +184,8 @@ export default function AssessmentTable() {
     if (token && body) {
       setLoading(true);
       const body = {
-        client_id: localStorage.getItem('client_id'),
-        assessment_name: 'sample assesment',
+        client_id: "coforge",
+        assessment_name: assessment_name,
         cyber_risk_table: {
           control_number: tableData?.['Control Number'],
           control_name: tableData?.['Control Name'],
@@ -204,9 +205,9 @@ export default function AssessmentTable() {
         toast.success('Data saved successfully!');
 
         const updateAssessmentBody = {
-          status: 'pending',
-          assessment_name: 'sample assesment',
-          client_id: 'coforge',
+          status: "pending",
+          assessment_name: assessment_name,
+          client_id: "coforge",
         };
 
         const updateAssessmentResponse = await updateAssessment(
@@ -288,15 +289,23 @@ export default function AssessmentTable() {
   React.useEffect(() => {
     const initializeData = async () => {
       setTableLoading(true);
-      const client_id = localStorage.getItem('client_id');
-      const assessment_name = 'sample assesment';
+      const client_id = "coforge";
       const result = await fetchAssessmentStatus(
         client_id,
         assessment_name,
         token,
       );
       const status = result?.result[0].status;
-      if (status === 'completed') {
+      console.log(status)
+      if (status === "created") {
+        const res: GetPreAssesReportType = await getPreAssesReport(token);
+        setTableData(res);
+        setTableLoading(false);
+        // Perform actions for pending status, possibly fetching preliminary data
+        console.log("Status is pending. Perform normal operations.");
+      } else {
+
+
         const response = await fetchUpdatedTableData(
           client_id,
           assessment_name,

@@ -5,7 +5,9 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import DownloadIcon from '@mui/icons-material/Download';
 import Paper from "@mui/material/Paper";
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import {
   Box,
   Button,
@@ -123,7 +125,7 @@ export default function AssessmentTable() {
 
       const imgProps = pdf.getImageProperties(imgData);
       const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      
+
       let position = 0;
       while (position < imgHeight) {
         pdf.addImage(
@@ -168,15 +170,17 @@ export default function AssessmentTable() {
   const navigate = useNavigate();
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center   bg-[#f8f9fd]">
-      <div className="mb-10 flex w-full items-center  justify-center bg-white">
+      <div className="mb-10 absolute top-0 flex w-full items-center  justify-center bg-white">
         <div className="flex w-[90%] items-center justify-between">
           <div
-            className=" cursor-pointer rounded-2xl  py-6 text-xl font-semibold"
-            onClick={() => {
-              navigate("/");
-            }}
-            title="Home"
+            className=" cursor-pointer rounded-2xl  py-6 text-xl font-semibold flex items-center gap-2"
+
+
           >
+            <div title="Back"><ArrowBackIosIcon onClick={() => {
+              navigate("/");
+            }} /></div>
+
             Cyber Risk Assessment
           </div>
           <button
@@ -191,7 +195,7 @@ export default function AssessmentTable() {
         </div>
       </div>
 
-      <div className="flex w-[3/4] items-center justify-center gap-20">
+      <div className="flex w-[90%] mt-28 items-start justify-center gap-20">
         <FormControl fullWidth>
           <InputLabel id="label1">Select Domain</InputLabel>
           <Select
@@ -211,8 +215,9 @@ export default function AssessmentTable() {
           </Select>
         </FormControl>
       </div>
-      {/* Use CyRapid Button  */}
-      <div className="flex w-[90%] items-end justify-end ">
+      {/* CyRapid Buttons  */}
+      <div className="flex w-[90%] items-center justify-between gap-4 mt-10">
+        <div className="flex gap-4">
         <Button
           sx={{ mb: 2, backgroundColor: "#004ab9" }}
           onClick={() => {
@@ -223,15 +228,13 @@ export default function AssessmentTable() {
         >
           Use CyRapid AI
         </Button>
-      </div>
-      <div className="flex w-[90%] items-end justify-end ">
         <Button
-          sx={{ mb: 2, mr: 2, backgroundColor: "#004ab9" }}
-          // onClick={HandleSubmitComplete}
+          sx={{ mb: 2, backgroundColor: "#004ab9" }}
+          onClick={HandleSubmitComplete}
+          disabled
           variant="contained"
-          onClick={handlePrint}
         >
-          Save as Pdf
+          Save For Later
         </Button>
         <Button
           sx={{ mb: 2, backgroundColor: "#004ab9" }}
@@ -241,11 +244,23 @@ export default function AssessmentTable() {
         >
           Save & Complete
         </Button>
+        </div>
+        <Button
+          sx={{ mb: 2, backgroundColor: "#004ab9" }}
+          onClick={handlePrint}
+          variant="contained"
+        >
+          <DownloadIcon />
+          Save as Pdf
+        </Button>
       </div>
-      <TableContainer component={Paper} sx={{ width: "90%", p:"10px" }} ref={contentRef}>
+      <div></div>
+
+      <TableContainer component={Paper} sx={{ width: "90%" }} ref={contentRef}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead sx={{ backgroundColor: "#004ab9" }}>
             <TableRow>
+
               <TableCell
                 sx={{
                   color: "#fff",
@@ -256,8 +271,13 @@ export default function AssessmentTable() {
                 }}
                 colSpan={10}
               >
+
+
                 Cyber Risk Assessment Form
+
+
               </TableCell>
+
             </TableRow>
           </TableHead>
           <TableHead>
@@ -288,7 +308,7 @@ export default function AssessmentTable() {
               {numbers.map((number) => (
                 <TableRow
                   key={number}
-                  // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
                   <StyledTableCell>
                     {tableData?.["Control Number"][number.toString()]}
@@ -345,8 +365,8 @@ export default function AssessmentTable() {
                         targetText={
                           checked && !loading
                             ? tableData?.["Assessor Comments"][
-                                number.toString()
-                              ]
+                            number.toString()
+                            ]
                             : ""
                         }
                       />

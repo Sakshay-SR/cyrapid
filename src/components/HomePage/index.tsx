@@ -3,7 +3,9 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAssessment } from 'api/dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
-
+import SigmaredLogo from "../../assets/company-logo.png";
+import AddIcon from '@mui/icons-material/Add';
+import Add from '@mui/icons-material/Add';
 export default function HomePage() {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
@@ -20,13 +22,22 @@ export default function HomePage() {
 
   return (
     <div className="flex size-full items-center justify-center bg-[#F5F6FA]">
-      <div className="flex h-3/4 w-1/4 flex-col items-center justify-between gap-4 rounded-lg bg-white p-10 font-bold">
-        <div className="flex flex-col gap-4">
-          <div className="text-2xl ">Assessment Inventory</div>
-          <div className="flex w-full gap-4 ">
-            <div className="flex w-full flex-col items-start justify-between">
-              <div className="text-sm font-normal text-slate-700">Hello,</div>
-              <div className="text-sm font-normal text-slate-700">
+      {/* HEADER */}
+      <div className='h-20 w-full flex items-center  justify-center absolute z-10 top-0 bg-white '>
+        <div className="flex w-[90%] items-center justify-between">
+          <div
+            className=" cursor-pointer rounded-2xl  text-2xl font-semibold"
+            onClick={() => {
+              navigate("/");
+            }}
+            title="Home"
+          >
+            <img src={SigmaredLogo} width="150" alt="Logo" />
+          </div>
+          <div className="flex gap-4">
+            <div className="flex w-full flex-col items-end justify-between">
+              <div className="text-sm font-semibold">Hello,</div>
+              <div className="text-sm font-semibold">
                 {user?.name}
               </div>
             </div>
@@ -41,22 +52,15 @@ export default function HomePage() {
             </button>
           </div>
         </div>
+      </div>
+      {/* INVENTORY  */}
+      <div className="flex shadow-2xl h-auto w-1/4 flex-col items-center justify-between gap-4 rounded-lg bg-white p-10 font-bold">
+        <div className="flex flex-col gap-4">
+          <div className="text-2xl ">Assessment Inventory</div>
 
-        {/* <div className="mb-20 grid grid-cols-2 gap-4 text-white">
-          <div className="rounded-lg bg-[#D946EF] p-20 ">01</div>
-          <div className="rounded-lg bg-[#D946EF] p-20 ">02</div>
-          <div className="rounded-lg bg-[#D946EF] p-20 ">03</div>
-          <div className="rounded-lg bg-[#D946EF] p-20 ">04</div>
-        </div> */}
+        </div>
         <div className="grid grid-cols-1  ">
-          <button
-            className=" mt-6 flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
-            onClick={() => {
-              navigate('/create-project');
-            }}
-          >
-            Setup Assessment
-          </button>
+
           <button
             className=" mt-6 flex items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
             onClick={() => {
@@ -66,6 +70,16 @@ export default function HomePage() {
             Compliance Assessment
           </button>
         </div>
+      </div>
+      <div className='absolute bottom-20 right-10'>
+      <button
+            className=" mt-6 flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
+            onClick={() => {
+              navigate('/create-project');
+            }}
+          >
+            Setup Assessment &nbsp;<Add />
+          </button>
       </div>
     </div>
   );

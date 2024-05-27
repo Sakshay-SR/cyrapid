@@ -3,6 +3,8 @@ import DotLoader from 'react-spinners/DotLoader';
 import { useNavigate } from 'react-router-dom';
 import { createAssessment } from 'api/dashboard';
 import { useAuth0 } from '@auth0/auth0-react';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import LogoutIcon from "@mui/icons-material/Logout";
 
 
 export default function CreateProject() {
@@ -15,7 +17,7 @@ export default function CreateProject() {
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  const {logout} = useAuth0()
   const handlePolicyFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setPolicyFiles((prev) => [...prev, ...files]);
@@ -137,12 +139,35 @@ export default function CreateProject() {
 
   return (
     <div className="flex size-full items-center justify-center bg-[#F5F6FA]">
-      <div className="w-full max-w-3xl rounded-lg bg-white p-8 shadow-md">
+      {/* HEADER */}
+      <div className="mb-10 absolute top-0 flex w-full items-center  justify-center bg-white">
+        <div className="flex w-[90%] items-center justify-between">
+          <div
+            className=" cursor-pointer rounded-2xl  py-6 text-xl font-semibold flex items-center gap-2"
+
+
+          >
+            <div title="Back"><ArrowBackIosIcon onClick={() => {
+              navigate("/");
+            }} /></div>
+
+Setup Assessment
+          </div>
+          <button
+            title="logout"
+            // className=" mt-6 flex items-center justify-center rounded-lg bg-blue-500 p-4 text-center font-bold text-white hover:bg-blue-700"
+            onClick={() => {
+              logout();
+            }}
+          >
+            <LogoutIcon />
+          </button>
+        </div>
+      </div>
+      <div className="w-full max-w-3xl mt-28 mb-10 shadow-2xl rounded-lg bg-white p-8 shadow-md">
         {!showTable ? (
           <div className="w-full">
-            <h2 className="mb-10 text-center text-3xl font-bold text-gray-800">
-              Setup Assessment
-            </h2>
+           
             <div className="mb-5">
               <h3 className="text-lg font-semibold text-gray-700">
                 Assessment Name

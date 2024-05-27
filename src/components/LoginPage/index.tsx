@@ -84,10 +84,10 @@ export default function LoginPage() {
     <div className="flex h-screen flex-col">
       <div className="flex grow flex-col items-center justify-center bg-[#F5F6FA]">
         <ToastContainer />
-        <div className="mx-auto flex w-fit flex-col items-center justify-center gap-4 rounded-lg bg-white px-20 py-4">
-          <img src={SigmaredLogo} width="300" className="mb-5" alt="Logo" />
+        <div className="mx-auto py-24 flex w-fit flex-col items-center shadow-2xl justify-center gap-2 rounded-lg bg-white px-20 py-4">
+          <img src={SigmaredLogo} width="250" className="mb-8" alt="Logo" />
           <div className="text-xl font-semibold">Welcome to CyRapid</div>
-          <div className="mb-10 text-slate-500">
+          <div className="text-slate-500 mb-12">
             Sign in to continue to CyRapid
           </div>
           {/* <div className="flex items-center justify-start gap-4 rounded-lg bg-[#e8f0fe] p-4">
@@ -129,11 +129,11 @@ export default function LoginPage() {
             Show password
           </div> */}
           <button
-            className="flex w-full items-center justify-center rounded-lg bg-[#1a73e8] p-4 text-center text-white"
+            className="flex w-full text-md font-bold items-center justify-center rounded-lg bg-[#1a73e8] p-4 text-center text-white"
             onClick={handleLogin}
           >
             {/* {loading ? <DotLoader color="#36d7b7" size={20} /> : 'LOGIN'} */}
-            LOGIN
+            Sign In
           </button>
         </div>
       </div>

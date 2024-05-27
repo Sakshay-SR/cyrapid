@@ -5,9 +5,9 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import DownloadIcon from '@mui/icons-material/Download';
+import DownloadIcon from "@mui/icons-material/Download";
 import Paper from "@mui/material/Paper";
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import {
   Box,
   Button,
@@ -20,13 +20,22 @@ import {
   styled,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { getPreAssesReport } from "api/dashboard";
+import {
+  getPreAssesReport,
+  getSaveContinue,
+  updateAssessment,
+  fetchUpdatedTableData,
+  fetchAssessmentStatus,
+} from "api/dashboard";
 import { BarLoader, PropagateLoader, PulseLoader } from "react-spinners";
 import StreamingTextInput from "components/Common/StreamingTextInput";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
-import * as htmlToImage from 'html-to-image';
-import jsPDF from 'jspdf';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import * as htmlToImage from "html-to-image";
+import jsPDF from "jspdf";
 
 type GetPreAssesReportType = {
   "Assessee Comments": any;
@@ -72,20 +81,28 @@ export default function AssessmentTable() {
     [key: string]: string;
   };
   // const [newState, setNewState] = React.useState<ItemType[]>([]);
-  const token = localStorage.getItem('token');
-  const [certification, setCertification] = React.useState("")
-  const [domain, setDomain] = React.useState("")
+  const token = localStorage.getItem("token");
+  const [certification, setCertification] = React.useState("");
+  const [domain, setDomain] = React.useState("");
   const { logout } = useAuth0();
   const [checked, setChecked] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [tableLoading, setTableLoading] = React.useState(false);
   const contentRef = React.useRef(null);
+  // function obj) {
+  //   const array = [];
+  //   for (let key in obj) {
+  //     if (obj.hasOwnProperty(key)) {
+  //       array.push(obj[key]);
+  //     }
+  //   }
+  //   return array;
+  // }
 
   const HandleSubmitComplete = async () => {
     if (token && tableData) {
       const body = {
         client_id: localStorage.getItem("client_id"),
-        user_id: localStorage.getItem("user_id"),
         assessment_name: "sample assesment",
         cyber_risk_table: {
           control_number: tableData?.["Control Number"],
@@ -100,10 +117,79 @@ export default function AssessmentTable() {
           remarks: tableData?.["Remarks"],
         },
       };
-      const res = await getSaveContinue(body, token);
-      console.log(res);
+      try {
+        const saveContinueResponse = await getSaveContinue(body, token);
+        console.log("SaveContinue response:", saveContinueResponse);
+        toast.success("Data saved successfully!");
+
+        const updateAssessmentBody = {
+          status: "completed",
+          assessment_name: "sample assesment",
+          client_id: "coforge",
+        };
+
+        const updateAssessmentResponse = await updateAssessment(
+          updateAssessmentBody,
+          token,
+        );
+        console.log("UpdateAssessment response:", updateAssessmentResponse);
+        toast.success("Assessment status updated to completed.");
+
+        // Fetch updated table data
+        navigate("/");
+      } catch (error) {
+        console.error("Error during API calls:", error);
+        toast.error(`Error: ${error.message}`);
+      }
     } else {
-      console.log('No token and data');
+      console.log("No token and data");
+    }
+  };
+
+  const HandleSubmitLater = async () => {
+    if (token && tableData) {
+      const body = {
+        client_id: localStorage.getItem("client_id"),
+        assessment_name: "sample assesment",
+        cyber_risk_table: {
+          control_number: tableData?.["Control Number"],
+          control_name: tableData?.["Control Name"],
+          control_question: tableData?.["Control Question"],
+          assessee_comments: tableData?.["Assessee Comments"],
+          assessor_comments: tableData?.["Assessor Comments"],
+          compliance_category: tableData?.["Compliance Category"],
+          findings: tableData?.["Findings"],
+          findings_category: tableData?.["Findings Category"],
+          recommendations: tableData?.["Recommendations"],
+          remarks: tableData?.["Remarks"],
+        },
+      };
+      try {
+        const saveContinueResponse = await getSaveContinue(body, token);
+        console.log("SaveContinue response:", saveContinueResponse);
+        toast.success("Data saved successfully!");
+
+        const updateAssessmentBody = {
+          status: "pending",
+          assessment_name: "sample assesment",
+          client_id: "coforge",
+        };
+
+        const updateAssessmentResponse = await updateAssessment(
+          updateAssessmentBody,
+          token,
+        );
+        console.log("UpdateAssessment response:", updateAssessmentResponse);
+        toast.success("Assessment status updated to Pending.");
+
+        // Fetch updated table data
+        navigate("/");
+      } catch (error) {
+        console.error("Error during API calls:", error);
+        toast.error(`Error: ${error.message}`);
+      }
+    } else {
+      console.log("No token and data");
     }
   };
 
@@ -131,14 +217,7 @@ export default function AssessmentTable() {
 
       let position = 0;
       while (position < imgHeight) {
-        pdf.addImage(
-          imgData,
-          "PNG",
-          0,
-          -position,
-          pdfWidth,
-          imgHeight
-        );
+        pdf.addImage(imgData, "PNG", 0, -position, pdfWidth, imgHeight);
         position += pdfHeight;
         if (position < imgHeight) {
           pdf.addPage();
@@ -152,18 +231,59 @@ export default function AssessmentTable() {
   };
 
   const handleChange = (event: SelectChangeEvent) => {
-    setCertification(event.target.value)
-  }
-  React.useEffect(() => {
-    setTableLoading(true);
-    const fetchData = async () => {
-      const res: GetPreAssesReportType = await getPreAssesReport(token);
-      setTableData(res);
-      setTableLoading(false);
-    };
-    fetchData();
-  }, []);
+    setCertification(event.target.value);
+  };
 
+  function transformApiResponse(response) {
+    // Map the response keys to the new keys as defined in GetPreAssesReportType
+    return {
+      "Assessee Comments": response.assessee_comments,
+      "Assessor Comments": response.assessor_comments,
+      "Compliance Category": response.compliance_category,
+      "Control Name": response.control_name,
+      "Control Number": response.control_number,
+      "Control Question": response.control_question,
+      "Findings": response.findings,
+      "Findings Category": response.findings_category,
+      "Recommendations": response.recommendations,
+      "Remarks": response.remarks
+    };
+  }
+
+  React.useEffect(() => {
+    const initializeData = async () => {
+      setTableLoading(true);
+      const client_id = localStorage.getItem("client_id");
+      const assessment_name = "sample assesment";
+      const result = await fetchAssessmentStatus(
+        client_id,
+        assessment_name,
+        token,
+      );
+      const status = result?.result[0].status;
+      if (status === "completed") {
+        const response = await fetchUpdatedTableData(
+          client_id,
+          assessment_name,
+          token,
+        );
+        const finalTable = transformApiResponse(
+          response?.result[0]['cyber_risk_table'],
+        );
+        const res: GetPreAssesReportType = finalTable;
+        setTableData(res);
+        setTableLoading(false);
+      } else if (status === "pending") {
+        const res: GetPreAssesReportType = await getPreAssesReport(token);
+        setTableData(res);
+        setTableLoading(false);
+        // Perform actions for pending status, possibly fetching preliminary data
+        console.log("Status is pending. Perform normal operations.");
+      }
+    };
+
+    initializeData();
+  }, []);
 
   React.useEffect(() => {
     if (checked) {
@@ -176,21 +296,31 @@ export default function AssessmentTable() {
   const navigate = useNavigate();
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-start   bg-[#f8f9fd]">
-      <div className="mb-10 absolute top-0 flex w-full items-center  justify-center bg-white">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <div className="absolute top-0 mb-10 flex w-full items-center  justify-center bg-white">
         <div className="flex w-[90%] items-center justify-between">
-          <div
-            className=" cursor-pointer rounded-2xl  py-6 text-xl font-semibold flex items-center gap-2"
-
-
-          >
-            <div title="Back"><ArrowBackIosIcon onClick={() => {
-              if (certification === "ISO 27001") { setCertification("") }
-              else {
-                navigate("/");
-              } 
-
-            }} /></div>
-
+          <div className=" flex cursor-pointer  items-center gap-2 rounded-2xl py-6 text-xl font-semibold">
+            <div title="Back">
+              <ArrowBackIosIcon
+                onClick={() => {
+                  if (certification === "ISO 27001") {
+                    setCertification("");
+                  } else {
+                    navigate("/");
+                  }
+                }}
+              />
+            </div>
             Cyber Risk Assessment
           </div>
           <button
@@ -205,9 +335,9 @@ export default function AssessmentTable() {
         </div>
       </div>
 
-      {certification === "ISO 27001" ?
+      {certification === "ISO 27001" ? (
         <>
-          <div className="flex w-[90%] mt-28 items-start justify-center gap-20">
+          <div className="mt-28 flex w-[90%] items-start justify-center gap-20">
             <FormControl fullWidth>
               <InputLabel id="label1">Select Domain</InputLabel>
               <Select
@@ -216,13 +346,17 @@ export default function AssessmentTable() {
                 label="Organizational Controls"
                 defaultValue={"Organizational Controls"}
                 value={domain}
-                onChange={(e)=>{setDomain(e.target.value)}}
+                onChange={(e) => {
+                  setDomain(e.target.value);
+                }}
               >
                 <MenuItem value={"Organizational Controls"}>
                   Organizational Controls
                 </MenuItem>
                 <MenuItem value={"People Controls"}>People Controls</MenuItem>
-                <MenuItem value={"Physical Controls"}>Physical Controls</MenuItem>
+                <MenuItem value={"Physical Controls"}>
+                  Physical Controls
+                </MenuItem>
                 <MenuItem value={"Technological controls"}>
                   Technological controls
                 </MenuItem>
@@ -230,7 +364,7 @@ export default function AssessmentTable() {
             </FormControl>
           </div>
           {/* CyRapid Buttons  */}
-          <div className="flex w-[90%] items-center justify-between gap-4 mt-10">
+          <div className="mt-10 flex w-[90%] items-center justify-between gap-4">
             <div className="flex gap-4">
               <Button
                 sx={{ mb: 2, backgroundColor: "#004ab9" }}
@@ -244,8 +378,7 @@ export default function AssessmentTable() {
               </Button>
               <Button
                 sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                onClick={HandleSubmitComplete}
-                disabled
+                onClick={HandleSubmitLater}
                 variant="contained"
               >
                 Save For Later
@@ -253,7 +386,6 @@ export default function AssessmentTable() {
               <Button
                 sx={{ mb: 2, backgroundColor: "#004ab9" }}
                 onClick={HandleSubmitComplete}
-                disabled
                 variant="contained"
               >
                 Save & Complete
@@ -270,11 +402,14 @@ export default function AssessmentTable() {
           </div>
           <div></div>
 
-          <TableContainer component={Paper} sx={{ width: "90%" }} ref={contentRef}>
+          <TableContainer
+            component={Paper}
+            sx={{ width: "90%" }}
+            ref={contentRef}
+          >
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead sx={{ backgroundColor: "#004ab9" }}>
                 <TableRow>
-
                   <TableCell
                     sx={{
                       color: "#fff",
@@ -285,13 +420,8 @@ export default function AssessmentTable() {
                     }}
                     colSpan={10}
                   >
-
-
                     Cyber Risk Assessment Form
-
-
                   </TableCell>
-
                 </TableRow>
               </TableHead>
               <TableHead>
@@ -322,7 +452,7 @@ export default function AssessmentTable() {
                   {numbers.map((number) => (
                     <TableRow
                       key={number}
-                    // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       <StyledTableCell>
                         {tableData?.["Control Number"][number.toString()]}
@@ -379,8 +509,8 @@ export default function AssessmentTable() {
                             targetText={
                               checked && !loading
                                 ? tableData?.["Assessor Comments"][
-                                number.toString()
-                                ]
+                                    number.toString()
+                                  ]
                                 : ""
                             }
                           />
@@ -455,8 +585,10 @@ export default function AssessmentTable() {
               <PulseLoader color="#36d7b7" loading />
             </div>
           )}
-        </> : (<>
-          <div className="flex w-[90%] mt-28 items-start justify-center gap-20">
+        </>
+      ) : (
+        <>
+          <div className="mt-28 flex w-[90%] items-start justify-center gap-20">
             <FormControl fullWidth>
               <InputLabel id="label1">Select Control Framework: </InputLabel>
               <Select
@@ -466,16 +598,21 @@ export default function AssessmentTable() {
                 value={certification}
                 onChange={handleChange}
               >
-                <MenuItem value={"ISO 27001"}>
-                  ISO 27001
+                <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
+                <MenuItem value={"NIS2"} disabled>
+                  NIS2
                 </MenuItem>
-                <MenuItem value={"NIS2"} disabled>NIS2</MenuItem>
-                <MenuItem value={"CCPA"} disabled>CCPA</MenuItem>
-                <MenuItem value={"GDPR"} disabled>GDPR</MenuItem>
+                <MenuItem value={"CCPA"} disabled>
+                  CCPA
+                </MenuItem>
+                <MenuItem value={"GDPR"} disabled>
+                  GDPR
+                </MenuItem>
               </Select>
             </FormControl>
           </div>
-        </>)}
+        </>
+      )}
     </div>
   );
 }

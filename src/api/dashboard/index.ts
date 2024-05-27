@@ -88,18 +88,69 @@ export async function getAssessment(client_id: string, token: string) {
     },
   );
   const result = await response.json();
-  return JSON.parse(result.body);
+  return result;
 }
 
 export async function getSaveContinue(body: object, token: string) {
-  const response = await fetch(`${base_url}/dashboard/save_table`, {
+  const response = await fetch(`${base_url}/dashboard/save_table/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`, // Assuming you need to send a token
     },
-    body: body,
+    body: JSON.stringify(body),
   });
   const result = await response.json();
-  return JSON.parse(result.body);
+  return result;
+}
+
+export async function updateAssessment(body: object, token: string) {
+  const response = await fetch(
+    `${base_url}/dashboard/update_assessment_status/`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+      body: JSON.stringify(body),
+    },
+  );
+  const result = await response.json();
+  return result;
+}
+
+export async function fetchUpdatedTableData(client:string, assesment_name: string, token: string) {
+  const response = await fetch(
+    `${base_url}/dashboard/get_table?assessment_name=${assesment_name}&client_id=${client}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      }
+    },
+  );
+  const result = await response.json();
+  return result;
+}
+
+export async function fetchAssessmentStatus(
+  client: string,
+  assesment_name: string,
+  token: string,
+) {
+  const response = await fetch(
+    `${base_url}/dashboard/assessments/status?assessment_name=${assesment_name}&client_id=${client}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+      body: {},
+    },
+  );
+  const result = await response.json();
+  return result;
 }

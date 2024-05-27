@@ -89,7 +89,7 @@ export default function AssessmentTable() {
   const [loading, setLoading] = React.useState(false);
   const [tableLoading, setTableLoading] = React.useState(false);
   const contentRef = React.useRef(null);
-  const assessment_name = localStorage.getItem("assessment_name")
+  const assessment_name = localStorage.getItem("assessment_name") || "sample assesment"
   // function obj) {
   //   const array = [];
   //   for (let key in obj) {
@@ -101,7 +101,7 @@ export default function AssessmentTable() {
   // }
 
   const HandleSubmitComplete = async () => {
-    
+
     if (token && tableData) {
       const body = {
         client_id: "coforge",
@@ -256,14 +256,22 @@ export default function AssessmentTable() {
     const initializeData = async () => {
       setTableLoading(true);
       const client_id = "coforge";
-      const assessment_name = assessment_name;
       const result = await fetchAssessmentStatus(
         client_id,
         assessment_name,
         token,
       );
       const status = result?.result[0].status;
-      if (status === "completed") {
+      console.log(status)
+      if (status === "created") {
+        const res: GetPreAssesReportType = await getPreAssesReport(token);
+        setTableData(res);
+        setTableLoading(false);
+        // Perform actions for pending status, possibly fetching preliminary data
+        console.log("Status is pending. Perform normal operations.");
+      } else {
+
+
         const response = await fetchUpdatedTableData(
           client_id,
           assessment_name,
@@ -275,12 +283,6 @@ export default function AssessmentTable() {
         const res: GetPreAssesReportType = finalTable;
         setTableData(res);
         setTableLoading(false);
-      } else if (status === "pending") {
-        const res: GetPreAssesReportType = await getPreAssesReport(token);
-        setTableData(res);
-        setTableLoading(false);
-        // Perform actions for pending status, possibly fetching preliminary data
-        console.log("Status is pending. Perform normal operations.");
       }
     };
 
@@ -454,7 +456,7 @@ export default function AssessmentTable() {
                   {numbers.map((number) => (
                     <TableRow
                       key={number}
-                      // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       <StyledTableCell>
                         {tableData?.["Control Number"][number.toString()]}
@@ -511,8 +513,8 @@ export default function AssessmentTable() {
                             targetText={
                               checked && !loading
                                 ? tableData?.["Assessor Comments"][
-                                    number.toString()
-                                  ]
+                                number.toString()
+                                ]
                                 : ""
                             }
                           />

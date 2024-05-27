@@ -84,7 +84,7 @@ export default function LoginPage() {
     <div className="flex h-screen flex-col">
       <div className="flex grow flex-col items-center justify-center bg-[#F5F6FA]">
         <ToastContainer />
-        <div className="mx-auto py-24 flex w-fit flex-col items-center shadow-2xl justify-center gap-2 rounded-lg bg-white px-20 py-4">
+        <div className="mx-auto py-24 flex w-fit flex-col items-center shadow-2xl justify-center gap-2 rounded-lg bg-white px-16">
           <img src={SigmaredLogo} width="250" className="mb-8" alt="Logo" />
           <div className="text-xl font-semibold">Welcome to CyRapid</div>
           <div className="text-slate-500 mb-12">

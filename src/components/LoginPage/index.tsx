@@ -7,6 +7,7 @@ import { Bounce, toast, ToastContainer } from "react-toastify";
 import DotLoader from "react-spinners/DotLoader";
 import Footer from "components/layout/footer";
 import { useAuth0 } from "@auth0/auth0-react";
+import Background1 from "../../assets/background2.png"
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -81,8 +82,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
-      <div className="flex grow flex-col items-center justify-center bg-[#F5F6FA]">
+    <div className="flex h-screen flex-col" style={{backgroundImage:`url(${Background1})`,backgroundRepeat:"no-repeat",backgroundSize:"cover"}}>
+      <div className="flex grow flex-col items-center justify-center ">
         <ToastContainer />
         <div className="mx-auto py-24 flex w-fit flex-col items-center shadow-2xl justify-center gap-2 rounded-lg bg-white px-16">
           <img src={SigmaredLogo} width="250" className="mb-8" alt="Logo" />
@@ -133,7 +134,7 @@ export default function LoginPage() {
             onClick={handleLogin}
           >
             {/* {loading ? <DotLoader color="#36d7b7" size={20} /> : 'LOGIN'} */}
-            Sign In
+            SIGN IN
           </button>
         </div>
       </div>

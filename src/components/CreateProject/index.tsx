@@ -5,7 +5,7 @@ import { createAssessment } from 'api/dashboard';
 import { useAuth0 } from '@auth0/auth0-react';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import LogoutIcon from "@mui/icons-material/Logout";
-
+import Background1 from "../../assets/background2.png"
 
 export default function CreateProject() {
   const navigate = useNavigate();
@@ -138,7 +138,7 @@ export default function CreateProject() {
   };
 
   return (
-    <div className="flex size-full items-center justify-center bg-[#F5F6FA]">
+    <div className="flex size-full items-center justify-center" style={{backgroundImage:`url(${Background1})`,backgroundRepeat:"no-repeat",backgroundSize:"cover"}}>
       {/* HEADER */}
       <div className="mb-10 absolute top-0 flex w-full items-center  justify-center bg-white">
         <div className="flex w-[90%] items-center justify-between">
@@ -177,7 +177,7 @@ Setup Assessment
                 placeholder="Enter assessment name"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                className="w-full border-2 p-2"
+                className="w-full border-2 p-2 rounded-lg"
               />
             </div>
             <div>
@@ -189,7 +189,7 @@ Setup Assessment
                 placeholder="Enter assessment description"
                 value={projectDescription}
                 onChange={(e) => setProjectDescription(e.target.value)}
-                className="w-full border-2 p-2"
+                className="w-full border-2 p-2 rounded-lg"
                 rows={2}
               />
             </div>
@@ -206,7 +206,7 @@ Setup Assessment
                   onChange={handlePolicyFileUpload}
                   className="mb-2 w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700"
                 />
-                <div className="flex h-20 w-full items-center justify-center overflow-y-auto border-2 border-dashed border-gray-300 p-3 text-gray-400">
+                {/* <div className="flex h-20 w-full items-center justify-center overflow-y-auto border-2 border-dashed border-gray-500 p-3">
                   {policyFiles.length > 0 ? (
                     <ul className="w-full">
                       {policyFiles.map((file, index) => (
@@ -218,7 +218,7 @@ Setup Assessment
                   ) : (
                     <span>No File Chosen</span>
                   )}
-                </div>
+                </div> */}
               </div>
               <div>
                 <h3 className="mb-2 text-lg font-semibold text-gray-700">
@@ -230,9 +230,9 @@ Setup Assessment
                   onChange={handleResponseFileUpload}
                   className="mb-2 w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700"
                 />
-                <div className="flex h-20 w-full items-center justify-center border-2 border-dashed border-gray-300 text-gray-400">
+                {/* <div className="flex h-20 w-full items-center justify-center border-2 border-dashed border-gray-300 text-gray-400">
                   {responseFile ? responseFile.name : 'No File Chosen'}
-                </div>
+                </div> */}
               </div>
             </div>
 

@@ -5,7 +5,7 @@ import { getAssessment } from "api/dashboard";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SigmaredLogo from "../../assets/company-logo.png";
 import AddIcon from "@mui/icons-material/Add";
-
+import Background1 from "../../assets/background2.png"
 export default function HomePage() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -23,7 +23,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="flex size-full items-center justify-center bg-[#F5F6FA]">
+    <div style={{backgroundImage:`url(${Background1})`,backgroundRepeat:"no-repeat",backgroundSize:"cover"}}  className="flex size-full items-center justify-center bg-[#f5f6fa]">
       {/* HEADER */}
       <div className="h-20 w-full flex items-center justify-center absolute z-10 top-0 bg-white">
         <div className="flex w-[90%] items-center justify-between">
@@ -54,14 +54,14 @@ export default function HomePage() {
       </div>
       {/* ASSESSMENT DISPLAY */}
       {/* ASSESSMENT DISPLAY */}
-      <div className="flex shadow-2xl h-auto w-3/4 flex-col items-center justify-center gap-4 rounded-lg bg-white p-10 font-bold">
+      <div  className="flex shadow-2xl h-auto w-4/5 flex-col items-center justify-center gap-4 rounded-lg bg-white p-10 font-bold">
         <div className="text-2xl mb-4">Your Assessments</div>
-        <div className="grid grid-cols-3 gap-4 w-full">
+        <div className="grid grid-cols-2 gap-4 w-full">
           {assessments.length > 0 ? (
             assessments.map((assessment:any, index) => (
               <div
                 key={index}
-                className="relative flex flex-col items-center justify-center rounded-lg bg-gray-100 px-4 py-12"
+                className="relative flex flex-col items-center justify-center rounded-lg bg-gray-200 px-4 pt-12 pb-6"
               >
                 <div className={`absolute right-1 top-2 rounded-full ${assessment.status==="created"?"bg-yellow-400":(assessment.status==="pending"?"bg-red-400":"bg-green-500")}  px-3 py-1 text-xs text-white`}>
                   {assessment.status}
@@ -83,19 +83,19 @@ export default function HomePage() {
           ) : (
             <div>Loading...</div>
           )}
+          {/* SETUP ASSESSMENT */}
+          <div className="absolute bottom-20 right-10">
+              <button
+                className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-8 py-4 text-center font-bold text-white hover:bg-blue-700 hover:text-white"
+                onClick={() => {
+                  navigate("/create-assessment");
+                }}
+              >
+                Setup Assessment &nbsp;
+                <AddIcon />
+              </button>
+            </div>
         </div>
-      </div>
-      {/* SETUP ASSESSMENT */}
-      <div className="absolute bottom-20 right-10">
-        <button
-          className="flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
-          onClick={() => {
-            navigate("/create-assessment");
-          }}
-        >
-          Setup Assessment &nbsp;
-          <AddIcon />
-        </button>
       </div>
     </div>
   );

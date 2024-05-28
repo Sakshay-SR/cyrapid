@@ -8,6 +8,8 @@ import TableRow from "@mui/material/TableRow";
 import DownloadIcon from "@mui/icons-material/Download";
 import Paper from "@mui/material/Paper";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import Background1 from "../../assets/background2.png"
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import {
   Box,
   Button,
@@ -55,7 +57,7 @@ const TableColumnHeaders = styled(TableCell)(() => ({
     backgroundColor: "#0c1d9e",
     color: "white",
     border: "none",
-    textAlign: "center",
+    textAlign: "left",
   },
   [`&.${tableCellClasses.body}`]: {
     padding: "1.5rem",
@@ -298,8 +300,9 @@ export default function AssessmentTable() {
   }, [checked]);
   const numbers = Array.from({ length: 30 }, (_, index) => index);
   const navigate = useNavigate();
+  
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-start   bg-[#f8f9fd]">
+    <div className="flex  min-h-screen w-screen flex-col items-center justify-start" style={{backgroundImage:`${tableLoading?`url(${Background1})`:undefined}`,backgroundRepeat:"no-repeat",backgroundSize:"cover" }}>
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -339,11 +342,35 @@ export default function AssessmentTable() {
         </div>
       </div>
 
-      {certification === "ISO 27001" ? (
-        <>
-          <div className="mt-28 flex w-[90%] items-start justify-center gap-20">
+      <div className="mt-28 flex flex-col w-[90%] items-start justify-center gap-4 bg-white px-4 py-6 rounded-xl">
+            <Box>Control Framework :</Box>
             <FormControl fullWidth>
-              <InputLabel id="label1">Select Domain</InputLabel>
+              <InputLabel id="label1">Choose your Option</InputLabel>
+              <Select
+                labelId="label1"
+                id="demo-simple-select-standard"
+                label={"Control Framework"}
+                value={certification}
+                onChange={handleChange}
+              >
+                <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
+                <MenuItem value={"NIS2"} disabled>
+                  NIS2
+                </MenuItem>
+                <MenuItem value={"CCPA"} disabled>
+                  CCPA
+                </MenuItem>
+                <MenuItem value={"GDPR"} disabled>
+                  GDPR
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+       {certification==="ISO 27001"&&<>
+          <div className="mt-4 flex flex-col w-[90%] items-start justify-center gap-4 bg-white px-4 py-6 rounded-xl">
+          <Box>Domain :</Box>
+            <FormControl fullWidth>
+              <InputLabel id="label1">Choose your Domain</InputLabel>
               <Select
                 labelId="label1"
                 id="demo-simple-select-standard"
@@ -368,18 +395,9 @@ export default function AssessmentTable() {
             </FormControl>
           </div>
           {/* CyRapid Buttons  */}
-          <div className="mt-10 flex w-[90%] items-center justify-between gap-4">
+          <div className="mt-10 flex w-[90%] items-center justify-end gap-4">
+             <div></div>
             <div className="flex gap-4">
-              <Button
-                sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                onClick={() => {
-                  setChecked(!checked);
-                  if (!checked) setLoading(true);
-                }}
-                variant="contained"
-              >
-                Use CyRapid AI
-              </Button>
               <Button
                 sx={{ mb: 2, backgroundColor: "#004ab9" }}
                 onClick={HandleSubmitLater}
@@ -394,7 +412,6 @@ export default function AssessmentTable() {
               >
                 Save & Complete
               </Button>
-            </div>
             <Button
               sx={{ mb: 2, backgroundColor: "#004ab9" }}
               onClick={handlePrint}
@@ -403,8 +420,26 @@ export default function AssessmentTable() {
               <DownloadIcon />
               Save as Pdf
             </Button>
+            </div>
           </div>
-          <div></div>
+          <div className="p-4 w-[90%] bg-[#004ab9] flex justify-between items-center">
+          <div className="  text-white font-bold text-xl">
+          Cyber Risk Assessment Form
+          </div>
+          <Button
+                sx={{ backgroundColor: "#fff", py: 2, color: "#004ab9", fontWeight: "bold",":hover":{
+                  backgroundColor: "white"
+                }}}
+                onClick={() => {
+                  setChecked(!checked);
+                  if (!checked) setLoading(true);
+                }}
+                variant="contained"
+              >
+                <AutoAwesomeIcon className="mr-2"/> Use CyRapid AI
+              </Button>
+          </div>
+          
 
           <TableContainer
             component={Paper}
@@ -412,7 +447,7 @@ export default function AssessmentTable() {
             ref={contentRef}
           >
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
-              <TableHead sx={{ backgroundColor: "#004ab9" }}>
+              {/* <TableHead sx={{ backgroundColor: "#004ab9" }}>
                 <TableRow>
                   <TableCell
                     sx={{
@@ -427,7 +462,7 @@ export default function AssessmentTable() {
                     Cyber Risk Assessment Form
                   </TableCell>
                 </TableRow>
-              </TableHead>
+              </TableHead> */}
               <TableHead>
                 <TableRow
                   sx={{
@@ -589,34 +624,8 @@ export default function AssessmentTable() {
               <PulseLoader color="#36d7b7" loading />
             </div>
           )}
-        </>
-      ) : (
-        <>
-          <div className="mt-28 flex w-[90%] items-start justify-center gap-20">
-            <FormControl fullWidth>
-              <InputLabel id="label1">Select Control Framework: </InputLabel>
-              <Select
-                labelId="label1"
-                id="demo-simple-select-standard"
-                label={"Control Framework"}
-                value={certification}
-                onChange={handleChange}
-              >
-                <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
-                <MenuItem value={"NIS2"} disabled>
-                  NIS2
-                </MenuItem>
-                <MenuItem value={"CCPA"} disabled>
-                  CCPA
-                </MenuItem>
-                <MenuItem value={"GDPR"} disabled>
-                  GDPR
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </div>
-        </>
-      )}
+        </>}
+      
     </div>
   );
 }

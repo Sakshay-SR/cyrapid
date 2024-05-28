@@ -91,7 +91,8 @@ export default function AssessmentTable() {
   const [loading, setLoading] = React.useState(false);
   const [tableLoading, setTableLoading] = React.useState(false);
   const contentRef = React.useRef(null);
-  const assessment_name = localStorage.getItem("assessment_name") || "sample assesment"
+  const assessment_name =
+    localStorage.getItem("assessment_name") || "sample assesment";
   // function obj) {
   //   const array = [];
   //   for (let key in obj) {
@@ -102,9 +103,39 @@ export default function AssessmentTable() {
   //   return array;
   // }
 
-  const HandleSubmitComplete = async () => {
+  const prepareDataForApi = () => {
+    return {
+      client_id: localStorage.getItem("client_id"),
+      assessment_name: "sample assessment",
+      cyber_risk_table: {
+        control_number: tableData["Control Number"],
+        control_name: tableData["Control Name"],
+        control_question: tableData["Control Question"],
+        assessee_comments: tableData["Assessee Comments"],
+        assessor_comments: tableData["Assessor Comments"],
+        compliance_category: tableData["Compliance Category"],
+        findings: tableData["Findings"],
+        findings_category: tableData["Findings Category"],
+        recommendations: tableData["Recommendations"],
+        remarks: tableData["Remarks"],
+      },
+    };
+  };
 
-    if (token && tableData) {
+  const handleDataChange = (index: number, field: string, value: string) => {
+    setTableData((prevData) => ({
+      ...prevData,
+      [field]: {
+        ...prevData[field],
+        [index]: value,
+      },
+    }));
+  };
+
+  const HandleSubmitComplete = async () => {
+    const body = prepareDataForApi();
+    if (token && body) {
+      setLoading(true);
       const body = {
         client_id: "coforge",
         assessment_name: assessment_name,
@@ -142,6 +173,7 @@ export default function AssessmentTable() {
         // Fetch updated table data
         navigate("/");
       } catch (error) {
+        setLoading(false);
         console.error("Error during API calls:", error);
         toast.error(`Error: ${error.message}`);
       }
@@ -151,10 +183,12 @@ export default function AssessmentTable() {
   };
 
   const HandleSubmitLater = async () => {
-    if (token && tableData) {
+    const body = prepareDataForApi();
+    if (token && body) {
+      setLoading(true);
       const body = {
-        client_id: "coforge",
-        assessment_name: assessment_name,
+        client_id: localStorage.getItem("client_id"),
+        assessment_name: "sample assesment",
         cyber_risk_table: {
           control_number: tableData?.["Control Number"],
           control_name: tableData?.["Control Name"],
@@ -189,6 +223,7 @@ export default function AssessmentTable() {
         // Fetch updated table data
         navigate("/");
       } catch (error) {
+        setLoading(false);
         console.error("Error during API calls:", error);
         toast.error(`Error: ${error.message}`);
       }
@@ -247,10 +282,10 @@ export default function AssessmentTable() {
       "Control Name": response.control_name,
       "Control Number": response.control_number,
       "Control Question": response.control_question,
-      "Findings": response.findings,
+      Findings: response.findings,
       "Findings Category": response.findings_category,
-      "Recommendations": response.recommendations,
-      "Remarks": response.remarks
+      Recommendations: response.recommendations,
+      Remarks: response.remarks,
     };
   }
 
@@ -264,7 +299,7 @@ export default function AssessmentTable() {
         token,
       );
       const status = result?.result[0].status;
-      console.log(status)
+      console.log(status);
       if (status === "created") {
         const res: GetPreAssesReportType = await getPreAssesReport(token);
         setTableData(res);
@@ -272,15 +307,13 @@ export default function AssessmentTable() {
         // Perform actions for pending status, possibly fetching preliminary data
         console.log("Status is pending. Perform normal operations.");
       } else {
-
-
         const response = await fetchUpdatedTableData(
           client_id,
           assessment_name,
           token,
         );
         const finalTable = transformApiResponse(
-          response?.result[0]['cyber_risk_table'],
+          response?.result[0]["cyber_risk_table"],
         );
         const res: GetPreAssesReportType = finalTable;
         setTableData(res);
@@ -402,6 +435,7 @@ export default function AssessmentTable() {
                 sx={{ mb: 2, backgroundColor: "#004ab9" }}
                 onClick={HandleSubmitLater}
                 variant="contained"
+                disabled={loading}
               >
                 Save For Later
               </Button>
@@ -409,6 +443,7 @@ export default function AssessmentTable() {
                 sx={{ mb: 2, backgroundColor: "#004ab9" }}
                 onClick={HandleSubmitComplete}
                 variant="contained"
+                disabled={loading}
               >
                 Save & Complete
               </Button>
@@ -416,6 +451,7 @@ export default function AssessmentTable() {
               sx={{ mb: 2, backgroundColor: "#004ab9" }}
               onClick={handlePrint}
               variant="contained"
+              disabled={loading}
             >
               <DownloadIcon />
               Save as Pdf
@@ -491,7 +527,7 @@ export default function AssessmentTable() {
                   {numbers.map((number) => (
                     <TableRow
                       key={number}
-                    // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       <StyledTableCell>
                         {tableData?.["Control Number"][number.toString()]}
@@ -509,6 +545,13 @@ export default function AssessmentTable() {
                           type="text"
                           value={
                             tableData?.["Assessee Comments"][number.toString()]
+                          }
+                          onChange={(e) =>
+                            handleDataChange(
+                              number,
+                              "Assessee Comments",
+                              e.target.value,
+                            )
                           }
                           placeholder="Comment"
                           variant="standard"
@@ -545,11 +588,18 @@ export default function AssessmentTable() {
                             placeholder="Comment"
                             speed={10}
                             width="400px"
+                            handleChange={(e) =>
+                              handleDataChange(
+                                number,
+                                "Assessor Comments",
+                                e.target.value,
+                              )
+                            }
                             targetText={
                               checked && !loading
                                 ? tableData?.["Assessor Comments"][
-                                number.toString()
-                                ]
+                                    number.toString()
+                                  ]
                                 : ""
                             }
                           />
@@ -557,11 +607,32 @@ export default function AssessmentTable() {
                       </StyledTableCell>
                       <StyledTableCell>
                         <FormControl fullWidth>
-                          <InputLabel id="label1">Select Option</InputLabel>
-                          <Select labelId="label1" label="Compliance">
-                            <MenuItem value="100">Compliant</MenuItem>
-                            <MenuItem value="50">Partially Compliant</MenuItem>
-                            <MenuItem value="0">Non Compliant</MenuItem>
+                          <InputLabel
+                            id={`compliance-category-label-${number}`}
+                          >
+                            Compliance
+                          </InputLabel>
+                          <Select
+                            labelId={`compliance-category-label-${number}`}
+                            value={
+                              tableData["Compliance Category"][number] || ""
+                            }
+                            onChange={(e) =>
+                              handleDataChange(
+                                number,
+                                "Compliance Category",
+                                e.target.value,
+                              )
+                            }
+                            label="Compliance"
+                          >
+                            <MenuItem value="Compliant">Compliant</MenuItem>
+                            <MenuItem value="Partially Compliant">
+                              Partially Compliant
+                            </MenuItem>
+                            <MenuItem value="Non-Compliant">
+                              Non Compliant
+                            </MenuItem>
                           </Select>
                         </FormControl>
                       </StyledTableCell>
@@ -581,12 +652,25 @@ export default function AssessmentTable() {
                       </StyledTableCell>
                       <StyledTableCell>
                         <FormControl fullWidth>
-                          <InputLabel id="label1">Select Option</InputLabel>
-                          <Select labelId="label1" label="Compliance">
-                            <MenuItem value="100">Critical</MenuItem>
-                            <MenuItem value="75">High</MenuItem>
-                            <MenuItem value="50">Medium</MenuItem>
-                            <MenuItem value="25">Low</MenuItem>
+                          <InputLabel id={`findings-category-label-${number}`}>
+                            Findings Category
+                          </InputLabel>
+                          <Select
+                            labelId={`findings-category-label-${number}`}
+                            value={tableData["Findings Category"][number] || ""}
+                            onChange={(e) =>
+                              handleDataChange(
+                                number,
+                                "Findings Category",
+                                e.target.value,
+                              )
+                            }
+                            label="Findings Category"
+                          >
+                            <MenuItem value="Critical">Critical</MenuItem>
+                            <MenuItem value="High">High</MenuItem>
+                            <MenuItem value="Medium">Medium</MenuItem>
+                            <MenuItem value="Low">Low</MenuItem>
                           </Select>
                         </FormControl>
                       </StyledTableCell>

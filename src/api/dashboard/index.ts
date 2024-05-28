@@ -1,6 +1,6 @@
 const base_url = 'https://cy-meda.azurewebsites.net';
 
-export async function getPreAssesReport(token: string) {
+export async function getPostAssesReport(token: string) {
   const res = await fetch(`${base_url}/dashboard/get_post_assesment_reports/`, {
     method: 'POST',
     headers: {
@@ -15,7 +15,7 @@ export async function getPreAssesReport(token: string) {
   return resbody; // Return the parsed JSON response
 }
 
-export async function getPostAssesReport(
+export async function getPreAssesReport(
   client_id: string,
   user_id: string,
   token: string,

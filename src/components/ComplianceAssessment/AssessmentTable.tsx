@@ -355,9 +355,9 @@ export default function AssessmentTable() {
   }, [checked]);
   const numbers = Array.from({ length: 30 }, (_, index) => index);
   const navigate = useNavigate();
-  
+
   return (
-    <div className="flex  min-h-screen w-screen flex-col items-center justify-start" style={{backgroundImage:`${tableLoading?`url(${Background1})`:undefined}`,backgroundRepeat:"no-repeat",backgroundSize:"cover" }}>
+    <div className="flex  min-h-screen w-screen flex-col items-center justify-start" style={{ backgroundImage: `${tableLoading ? `url(${Background1})` : undefined}`, backgroundRepeat: "no-repeat", backgroundSize: "cover" }}>
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -397,54 +397,54 @@ export default function AssessmentTable() {
         </div>
       </div>
 
-      <div className="mt-28 flex flex-col w-[90%] items-start justify-center gap-4 bg-white px-4 py-6 rounded-xl">
-            
-            <div className="mt-28 flex w-[90%] items-start justify-center gap-20">
-            <Box>Control Framework :</Box>
-            <FormControl fullWidth>
-              <InputLabel id="label1">Choose your Option</InputLabel>
-              <Select
-                labelId="label1"
-                id="demo-simple-select-standard"
-                label={"Control Framework"}
-                value={certification}
-                onChange={handleChange}
-              >
-                <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
-                <MenuItem value={"NIS2"} disabled>
-                  NIS2
-                </MenuItem>
-                <MenuItem value={"CCPA"} disabled>
-                  CCPA
-                </MenuItem>
-                <MenuItem value={"GDPR"} disabled>
-                  GDPR
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </div>
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{"Save Changes?"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Do you want to save the changes you made before leaving?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Ignore</Button>
-          <Button onClick={handleSaveForLater} autoFocus>
-            Save for Later
-          </Button>
-        </DialogActions>
-      </Dialog>    
-       {certification==="ISO 27001"&&<>
-          <div className="mt-4 flex flex-col w-[90%] items-start justify-center gap-4 bg-white px-4 py-6 rounded-xl">
-          <Box>Domain :</Box>
+      <div className="mt-28 flex flex-col w-[90%] items-start justify-center  bg-white px-4 py-6 rounded-xl">
+
+        <div className="flex-col flex w-full items-start justify-center gap-4">
+          <Box>Control Framework :</Box>
+          <FormControl fullWidth>
+            <InputLabel id="label1">Choose your Option</InputLabel>
+            <Select
+              labelId="label1"
+              id="demo-simple-select-standard"
+              label={"Control Framework"}
+              value={certification}
+              onChange={handleChange}
+            >
+              <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
+              <MenuItem value={"NIS2"} disabled>
+                NIS2
+              </MenuItem>
+              <MenuItem value={"CCPA"} disabled>
+                CCPA
+              </MenuItem>
+              <MenuItem value={"GDPR"} disabled>
+                GDPR
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+        <Dialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{"Save Changes?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Do you want to save the changes you made before leaving?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog}>Ignore</Button>
+            <Button onClick={handleSaveForLater} autoFocus>
+              Save for Later
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {certification === "ISO 27001" && <>
+          <div className="flex flex-col w-full items-start justify-center gap-4 bg-white py-6 rounded-xl">
+            <Box>Domain :</Box>
             <FormControl fullWidth>
               <InputLabel id="label1">Choose your Domain</InputLabel>
               <Select
@@ -471,8 +471,8 @@ export default function AssessmentTable() {
             </FormControl>
           </div>
           {/* CyRapid Buttons  */}
-          <div className="mt-10 flex w-[90%] items-center justify-end gap-4">
-             <div></div>
+          <div className="mt-10 flex w-full items-center justify-end gap-4">
+            <div></div>
             <div className="flex gap-4">
               <Button
                 sx={{ mb: 2, backgroundColor: "#004ab9" }}
@@ -490,42 +490,44 @@ export default function AssessmentTable() {
               >
                 Save & Complete
               </Button>
-            <Button
-              sx={{ mb: 2, backgroundColor: "#004ab9" }}
-              onClick={handlePrint}
-              variant="contained"
-              disabled={!checked || loading}
-            >
-              <DownloadIcon />
-              Save as Pdf
-            </Button>
+              <Button
+                sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                onClick={handlePrint}
+                variant="contained"
+                disabled={!checked || loading}
+              >
+                <DownloadIcon />
+                Save as Pdf
+              </Button>
             </div>
           </div>
-          <div className="p-4 w-[90%] bg-[#004ab9] flex justify-between items-center">
-          <div className="  text-white font-bold text-xl">
-          Cyber Risk Assessment Form
-          </div>
-          <Button
-                sx={{ backgroundColor: "#fff", py: 2, color: "#004ab9", fontWeight: "bold",":hover":{
+          <div className=" w-full bg-[#004ab9] flex justify-between items-center p-4 rounded-tr-md rounded-tl-md">
+            <div className="  text-white font-bold text-xl">
+              Cyber Risk Assessment Form
+            </div>
+            <Button
+              sx={{
+                backgroundColor: "#fff", py: 2, color: "#004ab9", fontWeight: "bold", ":hover": {
                   backgroundColor: "white"
-                }}}
-                onClick={() => {
-                  setChecked(!checked);
-                  if (!checked) setLoading(true);
-                }}
-                variant="contained"
-              >
-                <AutoAwesomeIcon className="mr-2"/> Use CyRapid AI
-              </Button>
+                }
+              }}
+              onClick={() => {
+                setChecked(!checked);
+                if (!checked) setLoading(true);
+              }}
+              variant="contained"
+            >
+              <AutoAwesomeIcon className="mr-2" /> Use CyRapid AI
+            </Button>
           </div>
-          
+
 
           <TableContainer
             component={Paper}
-            sx={{ width: "90%" }}
+            sx={{borderRadius: "0"}}
             ref={contentRef}
           >
-            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <Table sx={{ minWidth: 650 }} aria-label="simple table" >
               {/* <TableHead sx={{ backgroundColor: "#004ab9" }}>
                 <TableRow>
                   <TableCell
@@ -542,7 +544,7 @@ export default function AssessmentTable() {
                   </TableCell>
                 </TableRow>
               </TableHead> */}
-              <TableHead>
+              <TableHead >
                 <TableRow
                   sx={{
                     whiteSpace: "nowrap",
@@ -550,6 +552,7 @@ export default function AssessmentTable() {
                     fontSize: "20px",
                     fontWeight: "600",
                     padding: "1.5rem",
+                    borderRadius: "0"
                   }}
                 >
                   <TableColumnHeaders>Control Number</TableColumnHeaders>
@@ -570,7 +573,7 @@ export default function AssessmentTable() {
                   {numbers.map((number) => (
                     <TableRow
                       key={number}
-                      // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       <StyledTableCell>
                         {tableData?.["Control Number"][number.toString()]}
@@ -641,8 +644,8 @@ export default function AssessmentTable() {
                             targetText={
                               checked && !loading
                                 ? tableData?.["Assessor Comments"][
-                                    number.toString()
-                                  ]
+                                number.toString()
+                                ]
                                 : ""
                             }
                           />
@@ -752,8 +755,8 @@ export default function AssessmentTable() {
             </div>
           )}
         </>}
-      
-    </div>
+
+      </div>
     </div>
   );
 }

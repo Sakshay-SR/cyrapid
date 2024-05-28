@@ -19,9 +19,16 @@ import {
   TextField,
   styled,
 } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import {
-  getPreAssesReport,
+  getPostAssesReport,
   getSaveContinue,
   updateAssessment,
   fetchUpdatedTableData,
@@ -83,12 +90,13 @@ export default function AssessmentTable() {
   // const [newState, setNewState] = React.useState<ItemType[]>([]);
   const token = localStorage.getItem("token");
   const [certification, setCertification] = React.useState("");
-  const [domain, setDomain] = React.useState("");
+  const [domain, setDomain] = React.useState("Organizational Controls");
   const { logout } = useAuth0();
   const [checked, setChecked] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [tableLoading, setTableLoading] = React.useState(false);
   const contentRef = React.useRef(null);
+  const [openDialog, setOpenDialog] = React.useState(false);
   const assessment_name =
     localStorage.getItem("assessment_name") || "sample assesment";
   // function obj) {
@@ -267,6 +275,20 @@ export default function AssessmentTable() {
     }
   };
 
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setCertification("");
+  };
+
+  const handleSaveForLater = async () => {
+    await HandleSubmitLater();
+    navigate("/");
+  };
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
   const handleChange = (event: SelectChangeEvent) => {
     setCertification(event.target.value);
   };
@@ -299,7 +321,7 @@ export default function AssessmentTable() {
       const status = result?.result[0].status;
       console.log(status);
       if (status === "created") {
-        const res: GetPreAssesReportType = await getPreAssesReport(token);
+        const res: GetPreAssesReportType = await getPostAssesReport(token);
         setTableData(res);
         setTableLoading(false);
         // Perform actions for pending status, possibly fetching preliminary data
@@ -351,7 +373,7 @@ export default function AssessmentTable() {
               <ArrowBackIosIcon
                 onClick={() => {
                   if (certification === "ISO 27001") {
-                    setCertification("");
+                    handleOpenDialog();
                   } else {
                     navigate("/");
                   }
@@ -371,7 +393,25 @@ export default function AssessmentTable() {
           </button>
         </div>
       </div>
-
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Save Changes?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Do you want to save the changes you made before leaving?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Ignore</Button>
+          <Button onClick={handleSaveForLater} autoFocus>
+            Save for Later
+          </Button>
+        </DialogActions>
+      </Dialog>
       {certification === "ISO 27001" ? (
         <>
           <div className="mt-28 flex w-[90%] items-start justify-center gap-20">
@@ -435,7 +475,7 @@ export default function AssessmentTable() {
               sx={{ mb: 2, backgroundColor: "#004ab9" }}
               onClick={handlePrint}
               variant="contained"
-              disabled={loading}
+              disabled={!checked || loading}
             >
               <DownloadIcon />
               Save as Pdf

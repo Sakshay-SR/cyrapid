@@ -5,6 +5,14 @@ import { getAssessment } from "api/dashboard";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SigmaredLogo from "../../assets/company-logo.png";
 import AddIcon from "@mui/icons-material/Add";
+import { Table, TableBody, TableRow, TableHead } from '@mui/material';
+import { styled, TableCell as MuiTableCell } from '@mui/material';
+
+// Styled TableCell with content centered
+const TableCell = styled(MuiTableCell)({
+  textAlign: 'center',
+  verticalAlign: 'middle',
+});
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -54,36 +62,68 @@ export default function HomePage() {
       </div>
       {/* ASSESSMENT DISPLAY */}
       {/* ASSESSMENT DISPLAY */}
-      <div className="flex shadow-2xl h-auto w-3/4 flex-col items-center justify-center gap-4 rounded-lg bg-white p-10 font-bold">
+      <div className="flex shadow-2xl h-auto w-auto flex-col items-center justify-center gap-4 rounded-lg bg-white p-10 font-bold">
         <div className="text-2xl mb-4">Your Assessments</div>
-        <div className="grid grid-cols-3 gap-4 w-full">
-          {assessments.length > 0 ? (
-            assessments.map((assessment:any, index) => (
-              <div
-                key={index}
-                className="relative flex flex-col items-center justify-center rounded-lg bg-gray-100 px-4 py-12"
-              >
-                <div className={`absolute right-1 top-2 rounded-full ${assessment.status==="created"?"bg-yellow-400":(assessment.status==="pending"?"bg-red-400":"bg-green-500")}  px-3 py-1 text-xs text-white`}>
-                  {assessment.status}
-                </div>
-                <div className="text-lg font-semibold">
-                  {assessment.assessment_name.toUpperCase()}
-                </div>
-                <div className="text-sm">{assessment.descriptions}</div>
-                <button
-                  className="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 text-sm"
-                  onClick={() => {
-                    localStorage.setItem("assessment_name",assessment.assessment_name)
-                    navigate(`/compliance-assessment/new`)}}
-                >
-                  CyberRisk and Compliance Assessment
-                </button>
-              </div>
-            ))
-          ) : (
-            <div>Loading...</div>
+        <Table>
+          {assessments.length > 0 && (
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Action</TableCell>
+              </TableRow>
+            </TableHead>
           )}
-        </div>
+          <TableBody>
+            {assessments.length > 0 ? (
+              assessments.map((assessment: any, index: number) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    {assessment.assessment_name.toUpperCase()}
+                  </TableCell>
+                  <TableCell>{assessment.descriptions}</TableCell>
+                  <TableCell>
+                    <span
+                      style={{
+                        backgroundColor:
+                          assessment.status === "created"
+                            ? "#fbbf24"
+                            : assessment.status === "pending"
+                              ? "#f87171"
+                              : "#34d399",
+                        borderRadius: "8px",
+                        color: "white",
+                        padding: "4px 8px",
+                        display: "inline-block",
+                      }}
+                    >
+                      {assessment.status}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <button
+                      className="flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700 text-xs"
+                      onClick={() => {
+                        localStorage.setItem(
+                          "assessment_name",
+                          assessment.assessment_name,
+                        );
+                        navigate(`/compliance-assessment/new`);
+                      }}
+                    >
+                      CyberRisk and Compliance Assessment
+                    </button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4}>Loading...</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
       {/* SETUP ASSESSMENT */}
       <div className="absolute bottom-20 right-10">

@@ -687,6 +687,7 @@ export default function AssessmentTable() {
                                 )
                               }
                               label="Compliance"
+                              disabled
                             >
                               <MenuItem value="">Select one</MenuItem>
                               <MenuItem value="no">Non Compliant</MenuItem>

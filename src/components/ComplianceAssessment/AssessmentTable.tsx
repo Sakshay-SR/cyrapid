@@ -688,12 +688,11 @@ export default function AssessmentTable() {
                               }
                               label="Compliance"
                             >
-                              <MenuItem value="Compliant">Compliant</MenuItem>
-                              <MenuItem value="Partially Compliant">
+                              <MenuItem value="">Select one</MenuItem>
+                              <MenuItem value="no">Non Compliant</MenuItem>
+                              <MenuItem value="yes">Compliant</MenuItem>
+                              <MenuItem value="partially">
                                 Partially Compliant
-                              </MenuItem>
-                              <MenuItem value="Non-Compliant">
-                                Non Compliant
                               </MenuItem>
                             </Select>
                           </FormControl>

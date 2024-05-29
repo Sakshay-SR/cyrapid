@@ -120,7 +120,11 @@ export async function updateAssessment(body: object, token: string) {
   return result;
 }
 
-export async function fetchUpdatedTableData(client:string, assesment_name: string, token: string) {
+export async function fetchUpdatedTableData(
+  client: string,
+  assesment_name: string,
+  token: string,
+) {
   const response = await fetch(
     `${base_url}/dashboard/get_table?assessment_name=${assesment_name}&client_id=${client}`,
     {
@@ -128,7 +132,7 @@ export async function fetchUpdatedTableData(client:string, assesment_name: strin
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`, // Assuming you need to send a token
-      }
+      },
     },
   );
   const result = await response.json();

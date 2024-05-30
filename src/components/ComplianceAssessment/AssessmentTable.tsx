@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import * as React from 'react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import DownloadIcon from '@mui/icons-material/Download';
-import Paper from '@mui/material/Paper';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import Background1 from '../../assets/background2.png';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import * as React from "react";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import DownloadIcon from "@mui/icons-material/Download";
+import Paper from "@mui/material/Paper";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import Background1 from "../../assets/background2.png";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import {
   Box,
   Button,
@@ -21,79 +21,87 @@ import {
   SelectChangeEvent,
   TextField,
   styled,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-} from '@mui/material';
-import LogoutIcon from '@mui/icons-material/Logout';
+} from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
 import {
   getPostAssesReport,
   getSaveContinue,
   updateAssessment,
   fetchUpdatedTableData,
   fetchAssessmentStatus,
-} from 'api/dashboard';
-import { BarLoader, PropagateLoader, PulseLoader } from 'react-spinners';
-import StreamingTextInput from 'components/Common/StreamingTextInput';
-import { useAuth0 } from '@auth0/auth0-react';
-import { useNavigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { toast } from 'react-toastify';
-import * as htmlToImage from 'html-to-image';
-import jsPDF from 'jspdf';
+} from "api/dashboard";
+import { BarLoader, PropagateLoader, PulseLoader } from "react-spinners";
+import StreamingTextInput from "components/Common/StreamingTextInput";
+import { useAuth0 } from "@auth0/auth0-react";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import * as htmlToImage from "html-to-image";
+import jsPDF from "jspdf";
 
-type GetPreAssesReportType = {
-  'Assessee Comments': any;
-  'Assessor Comment (by CYRAPID AI)': any;
-  'Compliance Category': any;
-  'Control Name': any;
-  'Control Number': any;
-  'Control Question': any;
-  Domain: any;
-  Findings: any;
-  'Findings Category': any;
-  'Justification For Assessor Comment (by CYRAPID AI)': any;
-  'Policy or Process Document Name (PDF)': any;
-  'Recommendations For Compliance': any;
-  Remarks: any;
-  Subdomain: any;
-  'Updated Comments (If Any) by human Assessor': any;
+// type GetPreAssesReportType = {
+//   "Assessee Comments": any;
+//   "Assessor Comment (by CYRAPID AI)": any;
+//   "Compliance Category": any;
+//   "Control Name": any;
+//   "Control Number": any;
+//   "Control Question": any;
+//   Domain: any;
+//   Findings: any;
+//   "Findings Category": any;
+//   "Justification For Assessor Comment (by CYRAPID AI)": any;
+//   "Policy or Process Document Name (PDF)": any;
+//   "Recommendations For Compliance": any;
+//   Remarks: any;
+//   Subdomain: any;
+//   "Updated Comments (If Any) by human Assessor": any;
+// };
+
+type TableData = {
+  [columnName: string]: { [rowIndex: number]: string };
+};
+
+type TableRowData = {
+  [key: string]: string; // Column name to value mapping for each row
 };
 
 const TableColumnHeaders = styled(TableCell)(() => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: '#0c1d9e',
-    color: 'white',
-    border: 'none',
-    textAlign: 'left',
+    backgroundColor: "#0c1d9e",
+    color: "white",
+    border: "none",
+    textAlign: "left",
   },
   [`&.${tableCellClasses.body}`]: {
-    padding: '1.5rem',
-    fontSize: '20px',
+    padding: "1.5rem",
+    fontSize: "20px",
   },
 }));
 const StyledTableCell = styled(TableCell)(() => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: '#ebf2fc',
-    textAlign: 'center',
-    minWidth: '200px',
+    backgroundColor: "#ebf2fc",
+    textAlign: "center",
+    minWidth: "200px",
   },
   [`&.${tableCellClasses.body}`]: {
-    minWidth: '200px',
+    minWidth: "200px",
   },
 }));
 
 export default function AssessmentTable() {
-  const [tableData, setTableData] = React.useState<GetPreAssesReportType>();
-  // const [newState, setNewState] = React.useState<ItemType[]>([]);
-  const token = localStorage.getItem('token');
-  const [certification, setCertification] = React.useState('');
-  const [domain, setDomain] = React.useState('Organizational Controls');
+  const [tableData, setTableData] = React.useState<TableRowData[]>([]);
+  const [columns, setColumns] = React.useState<string[]>([]);
+  const token = localStorage.getItem("token");
+  const [certification, setCertification] = React.useState("");
+  const [domain, setDomain] = React.useState("Organizational Controls");
   const { logout } = useAuth0();
   const [checked, setChecked] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -101,101 +109,102 @@ export default function AssessmentTable() {
   const contentRef = React.useRef(null);
   const [openDialog, setOpenDialog] = React.useState(false);
   const assessment_name =
-    localStorage.getItem('assessment_name') || 'sample assesment';
-  const prepareDataForApi = () => {
-    if (tableData !== undefined)
-      return {
-        client_id: localStorage.getItem('client_id'),
-        assessment_name: 'sample assessment',
-        cyber_risk_table: tableData,
-      };
-  };
+    localStorage.getItem("assessment_name") || "sample assesment";
 
-  const handleDataChange = (index: number, field: string, value: string) => {
-    setTableData((prevData) => ({
-      ...prevData,
-      [field]: {
-        ...prevData[field],
-        [index]: value,
-      },
-    }));
+  const prepareDataForApi = (
+    rows: TableRowData[],
+    columns: string[],
+  ): TableData => {
+    const apiData: TableData = {};
+
+    // Initialize each column in the result with an empty object
+    columns.forEach((column) => {
+      apiData[column] = {};
+    });
+
+    // Populate each column object with row data
+    rows.forEach((row, index) => {
+      columns.forEach((column) => {
+        apiData[column][index] = row[column];
+      });
+    });
+
+    return apiData;
   };
 
   const HandleSubmitComplete = async () => {
-    const body = prepareDataForApi();
-    if (token && body) {
+    if (token) {
       setLoading(true);
       const body = {
-        client_id: 'coforge',
+        client_id: "coforge",
         assessment_name: assessment_name,
         cyber_risk_table: tableData,
       };
       try {
         const saveContinueResponse = await getSaveContinue(body, token);
-        console.log('SaveContinue response:', saveContinueResponse);
-        toast.success('Data saved successfully!');
+        console.log("SaveContinue responsse:", saveContinueResponse);
+        toast.success("Data saved successfully!");
 
         const updateAssessmentBody = {
-          status: 'completed',
+          status: "completed",
           assessment_name: assessment_name,
-          client_id: 'coforge',
+          client_id: "coforge",
         };
 
         const updateAssessmentResponse = await updateAssessment(
           updateAssessmentBody,
           token,
         );
-        console.log('UpdateAssessment response:', updateAssessmentResponse);
-        toast.success('Assessment status updated to completed.');
+        console.log("UpdateAssessment response:", updateAssessmentResponse);
+        toast.success("Assessment status updated to completed.");
 
         // Fetch updated table data
-        navigate('/');
+        navigate("/");
       } catch (error) {
         setLoading(false);
-        console.error('Error during API calls:', error);
+        console.error("Error during API calls:", error);
         toast.error(`Error: ${error.message}`);
       }
     } else {
-      console.log('No token and data');
+      console.log("No token and data");
     }
   };
 
   const HandleSubmitLater = async () => {
-    const body = prepareDataForApi();
-    if (token && body) {
+    if (token) {
       setLoading(true);
       const body = {
-        client_id: 'coforge',
-        assessment_name: localStorage.getItem('assessment_name'),
-        cyber_risk_table: tableData,
+        client_id: "coforge",
+        assessment_name: localStorage.getItem("assessment_name"),
+        cyber_risk_table: prepareDataForApi(tableData, columns),
       };
       try {
         const saveContinueResponse = await getSaveContinue(body, token);
-        console.log('SaveContinue response:', saveContinueResponse);
-        toast.success('Data saved successfully!');
+        console.log("SaveContinue response:", saveContinueResponse);
+        toast.success("Data saved successfully!");
 
         const updateAssessmentBody = {
-          status: 'pending',
+          status: "pending",
           assessment_name: assessment_name,
-          client_id: 'coforge',
+          client_id: "coforge",
         };
 
         const updateAssessmentResponse = await updateAssessment(
           updateAssessmentBody,
           token,
         );
-        console.log('UpdateAssessment response:', updateAssessmentResponse);
-        toast.success('Assessment status updated to Pending.');
+        console.log("UpdateAssessment response:", updateAssessmentResponse);
+        toast.success("Assessment status updated to Pending.");
 
         // Fetch updated table data
-        navigate('/');
+        navigate("/");
       } catch (error: any) {
         setLoading(false);
-        console.error('Error during API calls:', error);
+        console.error("Error during API calls:", error);
         toast.error(`Error: ${error.message}`);
       }
     } else {
-      console.log('No token and data');
+      console.log("No token and data");
     }
   };
 
@@ -208,11 +217,11 @@ export default function AssessmentTable() {
         width: inputData.scrollWidth,
         height: inputData.scrollHeight,
       });
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'px',
-        format: 'a4',
+        orientation: "landscape",
+        unit: "px",
+        format: "a4",
       });
 
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -223,27 +232,27 @@ export default function AssessmentTable() {
 
       let position = 0;
       while (position < imgHeight) {
-        pdf.addImage(imgData, 'PNG', 0, -position, pdfWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", 0, -position, pdfWidth, imgHeight);
         position += pdfHeight;
         if (position < imgHeight) {
           pdf.addPage();
         }
       }
 
-      pdf.save('assessment_table.pdf');
+      pdf.save("assessment_table.pdf");
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error("Error generating PDF:", error);
     }
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setCertification('');
+    setCertification("");
   };
 
   const handleSaveForLater = async () => {
     await HandleSubmitLater();
-    navigate('/');
+    navigate("/");
   };
 
   const handleOpenDialog = () => {
@@ -254,42 +263,94 @@ export default function AssessmentTable() {
     setCertification(event.target.value);
   };
 
-  function transformApiResponse(response) {
-    // Map the response keys to the new keys as defined in GetPreAssesReportType
-    return {
-      'Assessee Comments': response.assessee_comments,
-      'Assessor Comment (by CYRAPID AI)': response.assessor_comments,
-      'Compliance Category': response.compliance_category,
-      'Control Name': response.control_name,
-      'Control Number': response.control_number,
-      'Control Question': response.control_question,
-      Findings: response.findings,
-      'Findings Category': response.findings_category,
-      'Recommendations For Compliance': response.recommendations,
-      Remarks: response.remarks,
-    };
-  }
-  // type GetPreAssesReportType = {
-  //   'Assessee Comments': any;
-  //   'Assessor Comment (by CYRAPID AI)': any;
-  //   'Compliance Category': any;
-  //   'Control Name': any;
-  //   'Control Number': any;
-  //   'Control Question': any;
-  //   Domain: any;
-  //   Findings: any;
-  //   'Findings Category': any;
-  //   'Justification For Assessor Comment (by CYRAPID AI)': any;
-  //   'Policy or Process Document Name (PDF)': any;
-  //   'Recommendations For Compliance': any;
-  //   Remarks: any;
-  //   Subdomain: any;
-  //   'Updated Comments (If Any) by human Assessor': any;
-  // };
+  const handleDataChange = (
+    rowIndex: number,
+    column: string,
+    newValue: string,
+  ) => {
+    const updatedRows = [...tableData];
+    updatedRows[rowIndex][column] = newValue;
+    setTableData(updatedRows);
+  };
+
+  const transformApiResponse = (data: TableData) => {
+    if (data) {
+      const cols = Object.keys(data);
+      setColumns(cols);
+
+      const rowIndices = Object.keys(data[cols[0]]);
+      const rowData = rowIndices.map((index) => {
+        const row: { [key: string]: string } = {};
+        cols.forEach((col) => {
+          row[col] = data[col][index];
+        });
+        return row;
+      });
+      setTableData(rowData);
+    }
+  };
+
+  const renderCell = (value: string, column: string, rowIndex: number) => {
+    if (column.toLowerCase().includes("compliance category")) {
+      return (
+        <FormControl fullWidth>
+          <Select
+            value={value}
+            onChange={(e) => handleDataChange(rowIndex, column, e.target.value)}
+            displayEmpty
+          >
+            <MenuItem value="yes">Compliant</MenuItem>
+            <MenuItem value="no">Non-Compliant</MenuItem>
+            <MenuItem value="partially">Partially Compliant</MenuItem>
+          </Select>
+        </FormControl>
+      );
+    } else if (column.toLowerCase().includes("findings category")) {
+      return (
+        <FormControl fullWidth>
+          <Select
+            value={value}
+            onChange={(e) => handleDataChange(rowIndex, column, e.target.value)}
+            displayEmpty
+          >
+            <MenuItem value="Critical">Critical</MenuItem>
+            <MenuItem value="High">High</MenuItem>
+            <MenuItem value="Medium">Medium</MenuItem>
+            <MenuItem value="Low">Low</MenuItem>
+          </Select>
+        </FormControl>
+      );
+    } else if (column === "Assessor Comment (by CYRAPID AI)") {
+      return (
+        <StreamingTextInput
+          placeholder="Comment"
+          speed={10}
+          width="400px"
+          handleChange={(e) =>
+            handleDataChange(rowIndex, column, e.target.value)
+          }
+          targetText={checked && !loading ? value : ""}
+        />
+      );
+    }
+    return (
+      <TextField
+        sx={{ width: "400px" }}
+        fullWidth
+        variant="standard"
+        InputLabelProps={{
+          shrink: true,
+        }}
+        size="small"
+        value={value}
+        onChange={(e) => handleDataChange(rowIndex, column, e.target.value)}
+      />
+    );
+  };
   React.useEffect(() => {
     const initializeData = async () => {
       setTableLoading(true);
-      const client_id = 'coforge';
+      const client_id = "coforge";
       const result = await fetchAssessmentStatus(
         client_id,
         assessment_name,
@@ -297,23 +358,21 @@ export default function AssessmentTable() {
       );
       const status = result?.result[0].status;
       console.log(status);
-      if (status === 'created') {
-        const res: GetPreAssesReportType = await getPostAssesReport(token);
-        setTableData(res);
+      if (status === "created") {
+        const res = await getPostAssesReport(token);
+        transformApiResponse(res);
         setTableLoading(false);
-        // Perform actions for pending status, possibly fetching preliminary data
-        console.log('Status is pending. Perform normal operations.');
+        console.log("Status is pending. Perform normal operations.");
       } else {
         const response = await fetchUpdatedTableData(
           client_id,
           assessment_name,
           token,
         );
-        const finalTable = response?.result[0]['cyber_risk_table'];
-
-        const res: GetPreAssesReportType = finalTable;
-        setTableData(res);
+        const finalTable = response?.result[0]["cyber_risk_table"];
+        transformApiResponse(finalTable);
         setTableLoading(false);
+        console.log("API Response finished");
       }
     };
 
@@ -327,7 +386,6 @@ export default function AssessmentTable() {
       }, 5000);
     }
   }, [checked]);
-  const numbers = Array.from({ length: 30 }, (_, index) => index);
   const navigate = useNavigate();
 
   return (
@@ -335,8 +393,8 @@ export default function AssessmentTable() {
       className="flex  min-h-screen w-screen flex-col items-center justify-start"
       style={{
         backgroundImage: `${tableLoading ? `url(${Background1})` : undefined}`,
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover',
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
       }}
     >
       <ToastContainer
@@ -356,10 +414,10 @@ export default function AssessmentTable() {
             <div title="Back">
               <ArrowBackIosIcon
                 onClick={() => {
-                  if (certification === 'ISO 27001') {
+                  if (certification === "ISO 27001") {
                     handleOpenDialog();
                   } else {
-                    navigate('/');
+                    navigate("/");
                   }
                 }}
               />
@@ -386,18 +444,18 @@ export default function AssessmentTable() {
             <Select
               labelId="label1"
               id="demo-simple-select-standard"
-              label={'Control Framework'}
+              label={"Control Framework"}
               value={certification}
               onChange={handleChange}
             >
-              <MenuItem value={'ISO 27001'}>ISO 27001</MenuItem>
-              <MenuItem value={'NIS2'} disabled>
+              <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
+              <MenuItem value={"NIS2"} disabled>
                 NIS2
               </MenuItem>
-              <MenuItem value={'CCPA'} disabled>
+              <MenuItem value={"CCPA"} disabled>
                 CCPA
               </MenuItem>
-              <MenuItem value={'GDPR'} disabled>
+              <MenuItem value={"GDPR"} disabled>
                 GDPR
               </MenuItem>
             </Select>
@@ -409,7 +467,7 @@ export default function AssessmentTable() {
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">{'Save Changes?'}</DialogTitle>
+          <DialogTitle id="alert-dialog-title">{"Save Changes?"}</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
               Do you want to save the changes you made before leaving?
@@ -422,7 +480,7 @@ export default function AssessmentTable() {
             </Button>
           </DialogActions>
         </Dialog>
-        {certification === 'ISO 27001' && (
+        {certification === "ISO 27001" && (
           <>
             <div className="flex w-full flex-col items-start justify-center gap-4 rounded-xl bg-white py-6">
               <Box>Domain :</Box>
@@ -432,20 +490,20 @@ export default function AssessmentTable() {
                   labelId="label1"
                   id="demo-simple-select-standard"
                   label="Organizational Controls"
-                  defaultValue={'Organizational Controls'}
+                  defaultValue={"Organizational Controls"}
                   value={domain}
                   onChange={(e) => {
                     setDomain(e.target.value);
                   }}
                 >
-                  <MenuItem value={'Organizational Controls'}>
+                  <MenuItem value={"Organizational Controls"}>
                     Organizational Controls
                   </MenuItem>
-                  <MenuItem value={'People Controls'}>People Controls</MenuItem>
-                  <MenuItem value={'Physical Controls'}>
+                  <MenuItem value={"People Controls"}>People Controls</MenuItem>
+                  <MenuItem value={"Physical Controls"}>
                     Physical Controls
                   </MenuItem>
-                  <MenuItem value={'Technological controls'}>
+                  <MenuItem value={"Technological controls"}>
                     Technological controls
                   </MenuItem>
                 </Select>
@@ -456,7 +514,7 @@ export default function AssessmentTable() {
               <div></div>
               <div className="flex gap-4">
                 <Button
-                  sx={{ mb: 2, backgroundColor: '#004ab9' }}
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={HandleSubmitLater}
                   variant="contained"
                   disabled={loading}
@@ -464,7 +522,7 @@ export default function AssessmentTable() {
                   Save For Later
                 </Button>
                 <Button
-                  sx={{ mb: 2, backgroundColor: '#004ab9' }}
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={HandleSubmitComplete}
                   variant="contained"
                   disabled={loading}
@@ -472,7 +530,7 @@ export default function AssessmentTable() {
                   Save & Complete
                 </Button>
                 <Button
-                  sx={{ mb: 2, backgroundColor: '#004ab9' }}
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={handlePrint}
                   variant="contained"
                   disabled={!checked || loading}
@@ -488,12 +546,12 @@ export default function AssessmentTable() {
               </div>
               <Button
                 sx={{
-                  backgroundColor: '#fff',
+                  backgroundColor: "#fff",
                   py: 2,
-                  color: '#004ab9',
-                  fontWeight: 'bold',
-                  ':hover': {
-                    backgroundColor: 'white',
+                  color: "#004ab9",
+                  fontWeight: "bold",
+                  ":hover": {
+                    backgroundColor: "white",
                   },
                 }}
                 onClick={() => {
@@ -508,7 +566,7 @@ export default function AssessmentTable() {
 
             <TableContainer
               component={Paper}
-              sx={{ borderRadius: '0' }}
+              sx={{ borderRadius: "0" }}
               ref={contentRef}
             >
               <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -531,43 +589,33 @@ export default function AssessmentTable() {
                 <TableHead>
                   <TableRow
                     sx={{
-                      whiteSpace: 'nowrap',
-                      color: '#fff',
-                      fontSize: '20px',
-                      fontWeight: '600',
-                      padding: '1.5rem',
-                      borderRadius: '0',
+                      whiteSpace: "nowrap",
+                      color: "#fff",
+                      fontSize: "20px",
+                      fontWeight: "600",
+                      padding: "1.5rem",
+                      borderRadius: "0",
                     }}
                   >
-                    <TableColumnHeaders>Control Number</TableColumnHeaders>
-                    <TableColumnHeaders>Control Name</TableColumnHeaders>
-                    <TableColumnHeaders>Control Question</TableColumnHeaders>
-                    <TableColumnHeaders>Assessee Comments </TableColumnHeaders>
-                    <TableColumnHeaders>
-                      Assessor Comment (by CYRAPID AI)
-                    </TableColumnHeaders>
-                    <TableColumnHeaders>
-                      Justification For Assessor Comment (by CYRAPID AI)
-                    </TableColumnHeaders>
-                    <TableColumnHeaders>Compliance Category</TableColumnHeaders>
-                    <TableColumnHeaders>Domain</TableColumnHeaders>
-                    <TableColumnHeaders>
-                      Policy or Process Document Name (PDF)
-                    </TableColumnHeaders>
-
-                    <TableColumnHeaders>Findings</TableColumnHeaders>
-                    <TableColumnHeaders>Findings Category</TableColumnHeaders>
-                    <TableColumnHeaders>
-                      Recommendations For Compliance
-                    </TableColumnHeaders>
-                    <TableColumnHeaders>Remarks</TableColumnHeaders>
-                    <TableColumnHeaders>Subdomain</TableColumnHeaders>
-                    <TableColumnHeaders>
-                      Updated Comments (If Any) by human Assessor
-                    </TableColumnHeaders>
+                    {columns.map((column) => (
+                      <TableColumnHeaders key={column}>
+                        {column.replace(/([A-Z])/g, " $1").trim()}
+                      </TableColumnHeaders>
+                    ))}
                   </TableRow>
                 </TableHead>
-                {tableData && (
+                <TableBody>
+                  {tableData.map((row, rowIndex) => (
+                    <TableRow key={rowIndex}>
+                      {columns.map((column) => (
+                        <StyledTableCell key={`${rowIndex}-${column}`}>
+                          {renderCell(row[column], column, rowIndex)}
+                        </StyledTableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+                {/* {tableData.length && (
                   <TableBody>
                     {numbers.map((number) => (
                       <TableRow
@@ -575,28 +623,28 @@ export default function AssessmentTable() {
                         // sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                       >
                         <StyledTableCell>
-                          {tableData?.['Control Number'][number.toString()]}
+                          {tableData?.["Control Number"][number.toString()]}
                         </StyledTableCell>
                         <StyledTableCell>
-                          {tableData?.['Control Name'][number.toString()]}
+                          {tableData?.["Control Name"][number.toString()]}
                         </StyledTableCell>
                         <StyledTableCell>
-                          {tableData?.['Control Question'][number.toString()]}
+                          {tableData?.["Control Question"][number.toString()]}
                         </StyledTableCell>
 
                         <StyledTableCell>
                           <TextField
-                            sx={{ width: '400px' }}
+                            sx={{ width: "400px" }}
                             type="text"
                             value={
-                              tableData?.['Assessee Comments'][
+                              tableData?.["Assessee Comments"][
                                 number.toString()
                               ]
                             }
                             onChange={(e) =>
                               handleDataChange(
                                 number,
-                                'Assessee Comments',
+                                "Assessee Comments",
                                 e.target.value,
                               )
                             }
@@ -638,16 +686,16 @@ export default function AssessmentTable() {
                               handleChange={(e) =>
                                 handleDataChange(
                                   number,
-                                  'Assessor Comment (by CYRAPID AI)',
+                                  "Assessor Comment (by CYRAPID AI)",
                                   e.target.value,
                                 )
                               }
                               targetText={
                                 checked && !loading
                                   ? tableData?.[
-                                      'Assessor Comment (by CYRAPID AI)'
+                                      "Assessor Comment (by CYRAPID AI)"
                                     ][number.toString()]
-                                  : ''
+                                  : ""
                               }
                             />
                           )}
@@ -658,7 +706,7 @@ export default function AssessmentTable() {
                             disabled
                             value={
                               tableData[
-                                'Justification For Assessor Comment (by CYRAPID AI)'
+                                "Justification For Assessor Comment (by CYRAPID AI)"
                               ][number.toString()]
                             }
                             variant="standard"
@@ -677,12 +725,12 @@ export default function AssessmentTable() {
                             <Select
                               labelId={`compliance-category-label-${number}`}
                               value={
-                                tableData['Compliance Category'][number] || ''
+                                tableData["Compliance Category"][number] || ""
                               }
                               onChange={(e) =>
                                 handleDataChange(
                                   number,
-                                  'Compliance Category',
+                                  "Compliance Category",
                                   e.target.value,
                                 )
                               }
@@ -702,7 +750,7 @@ export default function AssessmentTable() {
                           <TextField
                             label="Domain"
                             disabled
-                            value={tableData['Domain'][number.toString()]}
+                            value={tableData["Domain"][number.toString()]}
                             variant="standard"
                             InputLabelProps={{
                               shrink: true,
@@ -715,7 +763,7 @@ export default function AssessmentTable() {
                             disabled
                             value={
                               tableData[
-                                'Policy or Process Document Name (PDF)'
+                                "Policy or Process Document Name (PDF)"
                               ][number.toString()]
                             }
                             variant="standard"
@@ -726,11 +774,11 @@ export default function AssessmentTable() {
                         </StyledTableCell>
                         <StyledTableCell>
                           <TextField
-                            sx={{ width: '400px' }}
+                            sx={{ width: "400px" }}
                             label="Findings"
                             placeholder="Findings"
                             variant="standard"
-                            value={tableData?.['Findings'][number.toString()]}
+                            value={tableData?.["Findings"][number.toString()]}
                             disabled
                             InputLabelProps={{
                               shrink: true,
@@ -748,12 +796,12 @@ export default function AssessmentTable() {
                             <Select
                               labelId={`findings-category-label-${number}`}
                               value={
-                                tableData['Findings Category'][number] || ''
+                                tableData["Findings Category"][number] || ""
                               }
                               onChange={(e) =>
                                 handleDataChange(
                                   number,
-                                  'Findings Category',
+                                  "Findings Category",
                                   e.target.value,
                                 )
                               }
@@ -770,11 +818,11 @@ export default function AssessmentTable() {
                           <TextField
                             label="Recommendations For Compliance"
                             value={
-                              tableData['Recommendations For Compliance'][
+                              tableData["Recommendations For Compliance"][
                                 number.toString()
                               ]
                             }
-                            sx={{ width: '400px' }}
+                            sx={{ width: "400px" }}
                             variant="standard"
                             InputLabelProps={{
                               shrink: true,
@@ -797,7 +845,7 @@ export default function AssessmentTable() {
                           <TextField
                             label="Subdomain"
                             disabled
-                            value={tableData['Subdomain'][number.toString()]}
+                            value={tableData["Subdomain"][number.toString()]}
                             variant="standard"
                             InputLabelProps={{
                               shrink: true,
@@ -810,7 +858,7 @@ export default function AssessmentTable() {
                             disabled
                             value={
                               tableData[
-                                'Updated Comments (If Any) by human Assessor'
+                                "Updated Comments (If Any) by human Assessor"
                               ][number.toString()]
                             }
                             variant="standard"
@@ -822,7 +870,7 @@ export default function AssessmentTable() {
                       </TableRow>
                     ))}
                   </TableBody>
-                )}
+                )} */}
               </Table>
             </TableContainer>
             {tableLoading && (

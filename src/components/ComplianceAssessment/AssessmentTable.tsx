@@ -33,6 +33,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import Pagination from "@mui/material/Pagination";
 import {
   getPostAssesReport,
+  getPreAssesReport,
   getSaveContinue,
   updateAssessment,
   fetchUpdatedTableData,
@@ -279,6 +280,36 @@ export default function AssessmentTable() {
     setCertification(event.target.value);
   };
 
+  const HandleCyRapidButton = async () => {
+    if (tableData && tableData.length) {
+      setLoading(true);
+      setTableLoading(true);
+      try {
+        const res = await getPostAssesReport(token);
+        const cols = Object.keys(res[0]);
+        const newCols = cols.filter((item) => {
+          if (
+            item !== "Domain" &&
+            item !== "Subdomain" &&
+            item !== "Policy or Process Document Name (PDF)"
+          ) {
+            return item;
+          }
+        });
+        setColumns(newCols);
+        const ai = res.map((item) => item["Assessor Comment (by CYRAPID AI)"]);
+        console.log(ai);
+        setTableData(res);
+        setTableLoading(false);
+        setLoading(false);
+        setChecked(true);
+        console.log("Status is pending. Perform normal operations.");
+      } catch (error: any) {
+        console.log(error);
+      }
+    }
+  };
+
   const handleDataChange = (
     displayedRowIndex: number,
     column: string,
@@ -368,46 +399,90 @@ export default function AssessmentTable() {
   React.useEffect(() => {
     const initializeData = async () => {
       setTableLoading(true);
-      const client_id = "coforge";
-      const result = await fetchAssessmentStatus(
-        client_id,
-        assessment_name,
-        token,
-      );
-      const status = result?.result[0].status;
-      console.log(status);
-      if (status === "created") {
-        const res = await getPostAssesReport(token);
+      try {
+        const res = await getPreAssesReport(token);
         const cols = Object.keys(res[0]);
-        setColumns(cols);
+        const newCols = cols.filter((item) => {
+          if (
+            item !== "Domain" &&
+            item !== "Subdomain" &&
+            item !== "Policy or Process Document Name (PDF)"
+          ) {
+            return item;
+          }
+        });
+        setColumns(newCols);
         setTableData(res);
         setTableLoading(false);
         console.log("Status is pending. Perform normal operations.");
-      } else {
-        const response = await fetchUpdatedTableData(
-          client_id,
-          assessment_name,
-          token,
-        );
-        const finalTable: TableData = response?.result[0]["cyber_risk_table"];
-        const cols = Object.keys(finalTable);
-        setColumns(cols);
-        setTableData(transformApiResponse(finalTable));
-        setTableLoading(false);
-        console.log("API Response finished");
+      } catch (error: any) {
+        console.log(error);
       }
     };
-
     initializeData();
   }, []);
 
-  React.useEffect(() => {
-    if (checked) {
-      setTimeout(() => {
-        setLoading(false);
-      }, 5000);
-    }
-  }, [checked]);
+  // React.useEffect(() => {
+  //   const initializeData = async () => {
+  //     setTableLoading(true);
+  //     const client_id = "coforge";
+  //     const result = await fetchAssessmentStatus(
+  //       client_id,
+  //       assessment_name,
+  //       token,
+  //     );
+  //     const status = result?.result[0].status;
+  //     console.log(status);
+  //     if (status === "created") {
+  //       const res = await getPostAssesReport(token);
+  //       const cols = Object.keys(res[0]);
+  //       const newCols = cols.filter((item) => {
+  //         if (
+  //           item !== "Domain" &&
+  //           item !== "Subdomain" &&
+  //           item !== "Policy or Process Document Name (PDF)"
+  //         ) {
+  //           return item;
+  //         }
+  //       });
+  //       setColumns(newCols);
+  //       setTableData(res);
+  //       setTableLoading(false);
+  //       console.log("Status is pending. Perform normal operations.");
+  //     } else {
+  //       const response = await fetchUpdatedTableData(
+  //         client_id,
+  //         assessment_name,
+  //         token,
+  //       );
+  //       const finalTable: TableData = response?.result[0]["cyber_risk_table"];
+  //       const cols = Object.keys(finalTable);
+  //       const newCols = cols.filter((item) => {
+  //         if (
+  //           item !== "Domain" &&
+  //           item !== "Subdomain" &&
+  //           item !== "Policy or Process Document Name (PDF)"
+  //         ) {
+  //           return item;
+  //         }
+  //       });
+  //       setColumns(newCols);
+  //       setTableData(transformApiResponse(finalTable));
+  //       setTableLoading(false);
+  //       console.log("API Response finished");
+  //     }
+  //   };
+
+  //   initializeData();
+  // }, []);
+
+  // React.useEffect(() => {
+  //   if (checked) {
+  //     setTimeout(() => {
+  //       setLoading(false);
+  //     }, 5000);
+  //   }
+  // }, [checked]);
 
   const navigate = useNavigate();
 
@@ -540,7 +615,7 @@ export default function AssessmentTable() {
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={HandleSubmitLater}
                   variant="contained"
-                  disabled={loading}
+                  disabled={loading || tableLoading}
                 >
                   Save For Later
                 </Button>
@@ -548,7 +623,7 @@ export default function AssessmentTable() {
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={HandleSubmitComplete}
                   variant="contained"
-                  disabled={loading}
+                  disabled={loading || tableLoading}
                 >
                   Save & Complete
                 </Button>
@@ -556,7 +631,7 @@ export default function AssessmentTable() {
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={handlePrint}
                   variant="contained"
-                  disabled={!checked || loading}
+                  disabled={!checked || loading || tableLoading}
                 >
                   <DownloadIcon />
                   Save as Pdf
@@ -577,11 +652,9 @@ export default function AssessmentTable() {
                     backgroundColor: "white",
                   },
                 }}
-                onClick={() => {
-                  setChecked(!checked);
-                  if (!checked) setLoading(true);
-                }}
+                onClick={HandleCyRapidButton}
                 variant="contained"
+                disabled={tableLoading}
               >
                 <AutoAwesomeIcon className="mr-2" /> Use CyRapid AI
               </Button>

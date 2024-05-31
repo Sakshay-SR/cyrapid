@@ -29,6 +29,9 @@ importers:
       jspdf:
         specifier: ^2.5.1
         version: 2.5.1
+      jspdf-autotable:
+        specifier: ^3.8.2
+        version: 3.8.2(jspdf@2.5.1)
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -1708,6 +1711,11 @@ packages:
 
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
+
+  jspdf-autotable@3.8.2:
+    resolution: {integrity: sha512-zW1ix99/mtR4MbIni7IqvrpfHmuTaICl6iv6wqjRN86Nxtwaw/QtOeDbpXqYSzHIJK9JvgtLM283sc5x+ipkJg==}
+    peerDependencies:
+      jspdf: ^2.5.1
 
   jspdf@2.5.1:
     resolution: {integrity: sha512-hXObxz7ZqoyhxET78+XR34Xu2qFGrJJ2I2bE5w4SM8eFaFEkW2xcGRVUss360fYelwRSid/jT078kbNvmoW0QA==}
@@ -4269,6 +4277,10 @@ snapshots:
   json-schema-traverse@0.4.1: {}
 
   json-stable-stringify-without-jsonify@1.0.1: {}
+
+  jspdf-autotable@3.8.2(jspdf@2.5.1):
+    dependencies:
+      jspdf: 2.5.1
 
   jspdf@2.5.1:
     dependencies:

@@ -23,6 +23,7 @@ export default function LoginPage() {
         const response = await getIdTokenClaims();
         const token = response?.__raw;
         localStorage.setItem('token', token);
+        window.dispatchEvent(new CustomEvent('token-updated'));
       } catch (error) {
         console.error(error);
       }

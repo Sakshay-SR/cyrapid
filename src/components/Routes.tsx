@@ -27,11 +27,11 @@ export const router = createBrowserRouter([
             path: '/assessment-table',
             element: <SimpleTable />,
           },
+          {
+            path: '/compliance-assessment/new',
+            element: <AssessmentTable />,
+          },
         ],
-      },
-      {
-        path: '/compliance-assessment/new',
-        element: <AssessmentTable />,
       },
     ],
   },

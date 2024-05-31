@@ -263,7 +263,7 @@ export default function AssessmentTable() {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    navigate('/')
+    navigate("/");
   };
 
   const handleSaveForLater = async () => {
@@ -314,35 +314,28 @@ export default function AssessmentTable() {
   const renderCell = (value: string, column: string, index: number) => {
     const actualRowIndex = index + (page - 1) * rowsPerPage;
     const val = tableData[actualRowIndex][column] ?? "";
+    const compliance = {
+      yes: "Compliant",
+      no: "Non-compliant",
+      partially: "Partially Compliant",
+    };
     if (column.toLowerCase().includes("compliance category")) {
-      return (
-        <FormControl fullWidth>
-          <Select
-            value={val}
-            onChange={(e) => handleDataChange(index, column, e.target.value)}
-            displayEmpty
-          >
-            <MenuItem value="yes">Compliant</MenuItem>
-            <MenuItem value="no">Non-Compliant</MenuItem>
-            <MenuItem value="partially">Partially Compliant</MenuItem>
-          </Select>
-        </FormControl>
-      );
-    } else if (column.toLowerCase().includes("findings category")) {
-      return (
-        <FormControl fullWidth>
-          <Select
-            value={val}
-            onChange={(e) => handleDataChange(index, column, e.target.value)}
-            displayEmpty
-          >
-            <MenuItem value="Critical">Critical</MenuItem>
-            <MenuItem value="High">High</MenuItem>
-            <MenuItem value="Medium">Medium</MenuItem>
-            <MenuItem value="Low">Low</MenuItem>
-          </Select>
-        </FormControl>
-      );
+      return compliance[value];
+      // } else if (column.toLowerCase().includes("findings category")) {
+      //   return (
+      //     <FormControl fullWidth>
+      //       <Select
+      //         value={val}
+      //         onChange={(e) => handleDataChange(index, column, e.target.value)}
+      //         displayEmpty
+      //       >
+      //         <MenuItem value="Critical">Critical</MenuItem>
+      //         <MenuItem value="High">High</MenuItem>
+      //         <MenuItem value="Medium">Medium</MenuItem>
+      //         <MenuItem value="Low">Low</MenuItem>
+      //       </Select>
+      //     </FormControl>
+      //   );
     } else if (column === "Assessor Comment (by CYRAPID AI)") {
       return (
         <StreamingTextInput
@@ -353,20 +346,23 @@ export default function AssessmentTable() {
           targetText={checked && !loading ? (val !== null ? val : "") : ""}
         />
       );
+    } else if (column === "Updated Comments (If Any) by human Assessor") {
+      return (
+        <TextField
+          sx={{ width: "400px" }}
+          fullWidth
+          placeholder="comment"
+          variant="standard"
+          InputLabelProps={{
+            shrink: true,
+          }}
+          size="small"
+          value={val}
+          onChange={(e) => handleDataChange(index, column, e.target.value)}
+        />
+      );
     }
-    return (
-      <TextField
-        sx={{ width: "400px" }}
-        fullWidth
-        variant="standard"
-        InputLabelProps={{
-          shrink: true,
-        }}
-        size="small"
-        value={val}
-        onChange={(e) => handleDataChange(index, column, e.target.value)}
-      />
-    );
+    return val;
   };
 
   React.useEffect(() => {
@@ -417,7 +413,7 @@ export default function AssessmentTable() {
 
   return (
     <div
-      className="flex  min-h-screen w-screen flex-col items-center justify-start"
+      className="flex  min-h-full w-full  flex-col items-center justify-start"
       style={{
         backgroundImage: `${tableLoading ? `url(${Background1})` : undefined}`,
         backgroundRepeat: "no-repeat",

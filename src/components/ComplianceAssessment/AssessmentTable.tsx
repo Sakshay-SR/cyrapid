@@ -285,6 +285,10 @@ export default function AssessmentTable() {
     if (tableData && tableData.length) {
       setLoading(true);
       setTableLoading(true);
+      setTimeout(() => {
+        setTableLoading(false);
+        setLoading(false);
+      }, 10000);
       try {
         const res = await getPostAssesReport(token);
         const cols = Object.keys(res[0]);
@@ -297,10 +301,22 @@ export default function AssessmentTable() {
             return item;
           }
         });
-        setColumns(newCols);
-        setTableData(res);
-        setTableLoading(false);
-        setLoading(false);
+        const assessor = res.map(
+          (item) => item["Assessor Comment (by CYRAPID AI)"],
+        );
+        const justification = res.map(
+          (item) => item["Justification For Assessor Comment (by CYRAPID AI)"],
+        );
+        const prevTable = tableData.map((item, ind) => {
+          return {
+            ...item,
+            "Assessor Comment (by CYRAPID AI)": assessor[ind],
+            "Justification For Assessor Comment (by CYRAPID AI)":
+              justification[ind],
+          };
+        });
+        console.log(prevTable);
+        setTableData(prevTable);
         setChecked(true);
         console.log("Status is pending. Perform normal operations.");
       } catch (error: any) {
@@ -406,9 +422,14 @@ export default function AssessmentTable() {
           token,
         );
         const status = result?.result[0].status;
-        if (status === "completed") {
-          const res = await getPostAssesReport(token);
-          const cols = Object.keys(res[0]);
+        if (status !== "created") {
+          const res = await fetchUpdatedTableData(
+            client_id,
+            assessment_name,
+            token,
+          );
+          const final = res.result[0]?.["cyber_risk_table"];
+          const cols = Object.keys(final);
           const newCols = cols.filter((item) => {
             if (
               item !== "Domain" &&
@@ -419,11 +440,13 @@ export default function AssessmentTable() {
             }
           });
           setColumns(newCols);
-          setTableData(res);
+          setTableData(transformApiResponse(final));
           setTableLoading(false);
-          setChecked(true);
-          setCompleted(true);
-          setCertification("ISO 27001");
+          if (status === "completed") {
+            setChecked(true);
+            setCompleted(true);
+            setCertification("ISO 27001");
+          }
         } else {
           const res = await getPreAssesReport(token);
           const cols = Object.keys(res[0]);

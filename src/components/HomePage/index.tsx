@@ -19,6 +19,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const token = useState(localStorage.getItem("token"));
   const { logout, user } = useAuth0();
+  const [loading, setLoading] = useState(true);
   const [assessments, setAssessments] = useState([]);
 
   useEffect(() => {
@@ -30,11 +31,12 @@ export default function HomePage() {
         const res = await getAssessment(client_id, token);
         console.log(res, "worked");
         if (res?.result) {
-          setAssessments(res.result); // Assume res is an array of assessments
+          //setAssessments(res.result); // Assume res is an array of assessments
         }
       } catch (error) {
         console.error("Failed to fetch assessments:", error);
       }
+      setLoading(false);
     };
 
     const handleTokenUpdate = () => {
@@ -148,9 +150,13 @@ export default function HomePage() {
                   </TableCell>
                 </TableRow>
               ))
-            ) : (
+            ) : loading ? (
               <TableRow>
                 <TableCell colSpan={4}>Loading...</TableCell>
+              </TableRow>
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4}>No Assessments to show</TableCell>
               </TableRow>
             )}
           </TableBody>

@@ -1,5 +1,5 @@
-import { TextField } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { TextField } from "@mui/material";
+import React, { useEffect, useState } from "react";
 
 type StreamingTextInputProps = {
   targetText: string;
@@ -19,7 +19,7 @@ function StreamingTextInput({
   placeholder,
   width,
 }: StreamingTextInputProps) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -42,14 +42,22 @@ function StreamingTextInput({
       label={label !== undefined ? label : undefined}
       placeholder={placeholder}
       variant="standard"
-      sx={{ width: width || '100%' }}
+      sx={{
+        width: width || "100%",
+        "& .MuiInputBase-input.Mui-disabled": {
+          WebkitTextFillColor: "#000000",
+          fontSize: '0.875rem',
+        },
+      }}
       InputLabelProps={{
         shrink: true,
       }}
+      disabled
       onChange={(e) => {
         setText(e.target.value);
         if (handleChange !== undefined) handleChange(e);
       }}
+      size="small"
       multiline
     />
   );

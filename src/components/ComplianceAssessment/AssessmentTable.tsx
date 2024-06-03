@@ -114,6 +114,7 @@ export default function AssessmentTable() {
     localStorage.getItem("assessment_name") || "sample assesment";
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [page, setPage] = React.useState(1);
+  const [completed, setCompleted] = React.useState(false);
 
   const handleChangePage = (
     event: React.ChangeEvent<unknown>,
@@ -297,8 +298,6 @@ export default function AssessmentTable() {
           }
         });
         setColumns(newCols);
-        const ai = res.map((item) => item["Assessor Comment (by CYRAPID AI)"]);
-        console.log(ai);
         setTableData(res);
         setTableLoading(false);
         setLoading(false);
@@ -367,13 +366,12 @@ export default function AssessmentTable() {
       //       </Select>
       //     </FormControl>
       //   );
-    } else if (column === "Assessor Comment (by CYRAPID AI)") {
+    } else if (column.toLowerCase().includes("(by cyrapid ai)")) {
       return (
         <StreamingTextInput
-          placeholder="Comment"
+          placeholder="Click CYRAPID AI Button to get comments"
           speed={10}
           width="400px"
-          handleChange={(e) => handleDataChange(index, column, e.target.value)}
           targetText={checked && !loading ? (val !== null ? val : "") : ""}
         />
       );
@@ -388,6 +386,7 @@ export default function AssessmentTable() {
             shrink: true,
           }}
           size="small"
+          disabled={completed}
           value={val}
           onChange={(e) => handleDataChange(index, column, e.target.value)}
         />
@@ -400,21 +399,48 @@ export default function AssessmentTable() {
     const initializeData = async () => {
       setTableLoading(true);
       try {
-        const res = await getPreAssesReport(token);
-        const cols = Object.keys(res[0]);
-        const newCols = cols.filter((item) => {
-          if (
-            item !== "Domain" &&
-            item !== "Subdomain" &&
-            item !== "Policy or Process Document Name (PDF)"
-          ) {
-            return item;
-          }
-        });
-        setColumns(newCols);
-        setTableData(res);
-        setTableLoading(false);
-        console.log("Status is pending. Perform normal operations.");
+        const client_id = "coforge";
+        const result = await fetchAssessmentStatus(
+          client_id,
+          assessment_name,
+          token,
+        );
+        const status = result?.result[0].status;
+        if (status === "completed") {
+          const res = await getPostAssesReport(token);
+          const cols = Object.keys(res[0]);
+          const newCols = cols.filter((item) => {
+            if (
+              item !== "Domain" &&
+              item !== "Subdomain" &&
+              item !== "Policy or Process Document Name (PDF)"
+            ) {
+              return item;
+            }
+          });
+          setColumns(newCols);
+          setTableData(res);
+          setTableLoading(false);
+          setChecked(true);
+          setCompleted(true);
+          setCertification("ISO 27001");
+        } else {
+          const res = await getPreAssesReport(token);
+          const cols = Object.keys(res[0]);
+          const newCols = cols.filter((item) => {
+            if (
+              item !== "Domain" &&
+              item !== "Subdomain" &&
+              item !== "Policy or Process Document Name (PDF)"
+            ) {
+              return item;
+            }
+          });
+          setColumns(newCols);
+          setTableData(res);
+          setTableLoading(false);
+          console.log("Status is pending. Perform normal operations.");
+        }
       } catch (error: any) {
         console.log(error);
       }
@@ -512,7 +538,7 @@ export default function AssessmentTable() {
             <div title="Back">
               <ArrowBackIosIcon
                 onClick={() => {
-                  if (certification === "ISO 27001") {
+                  if (certification === "ISO 27001" && !completed) {
                     handleOpenDialog();
                   } else {
                     navigate("/");
@@ -545,6 +571,7 @@ export default function AssessmentTable() {
               label={"Control Framework"}
               value={certification}
               onChange={handleChange}
+              disabled={completed}
             >
               <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
               <MenuItem value={"NIS2"} disabled>
@@ -590,6 +617,7 @@ export default function AssessmentTable() {
                   label="Organizational Controls"
                   defaultValue={"Organizational Controls"}
                   value={domain}
+                  disabled={completed}
                   onChange={(e) => {
                     setDomain(e.target.value);
                   }}
@@ -615,7 +643,7 @@ export default function AssessmentTable() {
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={HandleSubmitLater}
                   variant="contained"
-                  disabled={loading || tableLoading}
+                  disabled={loading || tableLoading || completed}
                 >
                   Save For Later
                 </Button>
@@ -623,7 +651,7 @@ export default function AssessmentTable() {
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={HandleSubmitComplete}
                   variant="contained"
-                  disabled={loading || tableLoading}
+                  disabled={loading || tableLoading || completed}
                 >
                   Save & Complete
                 </Button>
@@ -631,7 +659,7 @@ export default function AssessmentTable() {
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={handlePrint}
                   variant="contained"
-                  disabled={!checked || loading || tableLoading}
+                  disabled={(!checked || loading || tableLoading) && !completed}
                 >
                   <DownloadIcon />
                   Save as Pdf
@@ -654,7 +682,7 @@ export default function AssessmentTable() {
                 }}
                 onClick={HandleCyRapidButton}
                 variant="contained"
-                disabled={tableLoading}
+                disabled={tableLoading || completed}
               >
                 <AutoAwesomeIcon className="mr-2" /> Use CyRapid AI
               </Button>

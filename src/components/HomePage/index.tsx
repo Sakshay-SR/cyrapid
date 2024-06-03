@@ -31,7 +31,7 @@ export default function HomePage() {
         const res = await getAssessment(client_id, token);
         console.log(res, "worked");
         if (res?.result) {
-          //setAssessments(res.result); // Assume res is an array of assessments
+          setAssessments(res.result); // Assume res is an array of assessments
         }
       } catch (error) {
         console.error("Failed to fetch assessments:", error);

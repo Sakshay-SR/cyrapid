@@ -75,36 +75,45 @@ type TableRowData = {
   [key: string]: string; // Column name to value mapping for each row
 };
 
-const TableColumnHeaders = styled(TableCell)(() => ({
+const TableColumnHeaders = styled(TableCell)(({ index }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: "#0c1d9e",
     color: "white",
     border: "none",
     textAlign: "left",
+    padding: "5px",
+    textAlign: index === 0 ? "center" : "left", // Center align only the first column
+    minWidth: index === 0 ? "50px" : "250px",
   },
   [`&.${tableCellClasses.body}`]: {
-    padding: "1.5rem",
+    padding: "5px",
     fontSize: "20px",
+    textAlign: index === 0 ? "center" : "left", // Center align only the first column
+    minWidth: index === 0 ? "50px" : "250px",
   },
 }));
-const StyledTableCell = styled(TableCell)(() => ({
+const StyledTableCell = styled(TableCell)(({ index }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: "#ebf2fc",
-    textAlign: "center",
-    minWidth: "200px",
+    textAlign: index === 0 ? "center" : "left", // Center align only the first column
+    minWidth: index === 0 ? "50px" : "250px",
+    padding: "5px",
   },
   [`&.${tableCellClasses.body}`]: {
-    minWidth: "200px",
+    textAlign: index === 0 ? "center" : "left", // Center align only the first column
+    minWidth: index === 0 ? "50px" : "250px",
+    padding: "8px",
   },
 }));
 
 export default function AssessmentTable() {
   const [tableData, setTableData] = React.useState<TableRowData[]>([]);
+  const [status, setStatus] = React.useState<string>("pending");
   const [columns, setColumns] = React.useState<string[]>([]);
   const token = localStorage.getItem("token");
   const [certification, setCertification] = React.useState("");
   const [domain, setDomain] = React.useState("Organizational Controls");
-  const { logout } = useAuth0();
+  const { logout, user } = useAuth0();
   const [checked, setChecked] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [tableLoading, setTableLoading] = React.useState(false);
@@ -115,6 +124,7 @@ export default function AssessmentTable() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [page, setPage] = React.useState(1);
   const [completed, setCompleted] = React.useState(false);
+  const [pdfClicked, setPdfClicked] = React.useState(false);
 
   const handleChangePage = (
     event: React.ChangeEvent<unknown>,
@@ -421,8 +431,9 @@ export default function AssessmentTable() {
           assessment_name,
           token,
         );
-        const status = result?.result[0].status;
-        if (status !== "created") {
+        const stat = result?.result[0].status;
+        setStatus(stat);
+        if (stat !== "created") {
           const res = await fetchUpdatedTableData(
             client_id,
             assessment_name,
@@ -442,7 +453,7 @@ export default function AssessmentTable() {
           setColumns(newCols);
           setTableData(transformApiResponse(final));
           setTableLoading(false);
-          if (status === "completed") {
+          if (stat === "completed") {
             setChecked(true);
             setCompleted(true);
             setCertification("ISO 27001");
@@ -571,15 +582,21 @@ export default function AssessmentTable() {
             </div>
             Cyber Risk Assessment
           </div>
-          <button
-            title="logout"
-            // className=" mt-6 flex items-center justify-center rounded-lg bg-blue-500 p-4 text-center font-bold text-white hover:bg-blue-700"
-            onClick={() => {
-              logout();
-            }}
-          >
-            <LogoutIcon />
-          </button>
+          <div className="flex gap-4">
+            <div className="flex w-full flex-col items-end justify-between">
+              <div className="font-semibold">{user?.nickname}</div>
+            </div>
+            <button
+              title="logout"
+              // className=" mt-6 flex items-center justify-center rounded-lg bg-blue-500 p-4 text-center font-bold text-white hover:bg-blue-700"
+              onClick={() => {
+                localStorage.removeItem("token");
+                logout();
+              }}
+            >
+              <LogoutIcon />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -594,7 +611,7 @@ export default function AssessmentTable() {
               label={"Control Framework"}
               value={certification}
               onChange={handleChange}
-              disabled={completed}
+              disabled={completed || tableLoading}
             >
               <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
               <MenuItem value={"NIS2"} disabled>
@@ -659,8 +676,12 @@ export default function AssessmentTable() {
               </FormControl>
             </div>
             {/* CyRapid Buttons  */}
-            <div className="mt-10 flex w-full items-center justify-end gap-4">
-              <div></div>
+            <div className="mt-10 flex w-full justify-between items-center gap-4">
+              <div className="mb-4">
+                {status === "completed"
+                  ? "Assessment under review by Human Assessor"
+                  : null}
+              </div>
               <div className="flex gap-4">
                 <Button
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
@@ -680,7 +701,7 @@ export default function AssessmentTable() {
                 </Button>
                 <Button
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={handlePrint}
+                  onClick={() => setPdfClicked(!pdfClicked)}
                   variant="contained"
                   disabled={(!checked || loading || tableLoading) && !completed}
                 >
@@ -689,6 +710,27 @@ export default function AssessmentTable() {
                 </Button>
               </div>
             </div>
+            {pdfClicked && (
+              <div className="flex w-full justify-end items-center gap-4">
+                <Button
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                  onClick={handlePrint}
+                  variant="contained"
+                >
+                  Save Assessment Worksheet
+                </Button>
+                <Button
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                  onClick={handlePrint}
+                  variant="contained"
+                  disabled
+                >
+                  <DownloadIcon />
+                  Save Assessment Report
+                </Button>
+              </div>
+            )}
+
             <div className=" flex w-full items-center justify-between rounded-t-md bg-[#004ab9] p-4">
               <div className="  text-xl font-bold text-white">
                 Cyber Risk Assessment Form
@@ -701,6 +743,9 @@ export default function AssessmentTable() {
                   fontWeight: "bold",
                   ":hover": {
                     backgroundColor: "white",
+                  },
+                  "&:disabled": {
+                    color: "gray", // Change text color to white when disabled
                   },
                 }}
                 onClick={HandleCyRapidButton}
@@ -715,34 +760,48 @@ export default function AssessmentTable() {
                 <TableContainer
                   component={Paper}
                   ref={contentRef}
-                  sx={{ borderRadius: "0" }}
+                  sx={{
+                    borderRadius: "0",
+                    position: "relative",
+                    maxHeight: "calc(100vh - 100px)",
+                  }}
                 >
-                  <Table stickyHeader>
-                    <TableHead>
+                  <Table>
+                    <TableHead
+                      sx={{
+                        backgroundColor: "#333",
+                        color: "#fff",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 1,
+                      }}
+                    >
                       <TableRow
                         sx={{
                           whiteSpace: "nowrap",
-                          color: "#fff",
                           fontSize: "20px",
                           fontWeight: "600",
                           padding: "1.5rem",
                           borderRadius: "0",
                         }}
                       >
-                        {columns.map((column) => (
-                          <TableColumnHeaders key={column}>
+                        {columns.map((column, colIndex) => (
+                          <TableColumnHeaders key={column} index={colIndex}>
                             {column}
                           </TableColumnHeaders>
                         ))}
                       </TableRow>
                     </TableHead>
-                    <TableBody>
+                    <TableBody sx={{ overflowY: "auto" }}>
                       {tableData
                         .slice((page - 1) * rowsPerPage, page * rowsPerPage)
                         .map((row, index) => (
                           <TableRow key={index}>
-                            {columns.map((column) => (
-                              <StyledTableCell key={`${index}-${column}`}>
+                            {columns.map((column, colIndex) => (
+                              <StyledTableCell
+                                key={`${index}-${column}`}
+                                index={colIndex}
+                              >
                                 {renderCell(row[column], column, index)}
                               </StyledTableCell>
                             ))}

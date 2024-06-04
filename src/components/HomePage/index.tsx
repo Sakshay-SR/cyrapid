@@ -8,7 +8,6 @@ import AddIcon from "@mui/icons-material/Add";
 import Background1 from "../../assets/background2.png";
 import { Table, TableBody, TableRow, TableHead } from "@mui/material";
 import { styled, TableCell as MuiTableCell } from "@mui/material";
-
 // Styled TableCell with content centered
 const TableCell = styled(MuiTableCell)({
   textAlign: "center",
@@ -25,7 +24,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("token"); // Retrieve token here within fetchData
-      console.log(token);
+      console.log(user);
       const client_id = "coforge";
       try {
         const res = await getAssessment(client_id, token);
@@ -78,8 +77,7 @@ export default function HomePage() {
           </div>
           <div className="flex gap-4">
             <div className="flex w-full flex-col items-end justify-between">
-              <div className="text-sm font-semibold">Hello,</div>
-              <div className="text-sm font-semibold">{user?.name}</div>
+              <div className="font-semibold">{user?.nickname}</div>
             </div>
             <button
               title="logout"
@@ -94,7 +92,6 @@ export default function HomePage() {
         </div>
       </div>
       {/* ASSESSMENT DISPLAY */}
-      {/* ASSESSMENT DISPLAY */}
       <div className="flex size-auto flex-col items-center justify-center gap-4 rounded-lg bg-white p-10 font-bold shadow-2xl">
         <div className="mb-4 text-2xl">Your Assessments</div>
         <Table>
@@ -104,7 +101,7 @@ export default function HomePage() {
                 <TableCell>Name</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell>Type of Assessment</TableCell>
               </TableRow>
             </TableHead>
           )}
@@ -129,14 +126,23 @@ export default function HomePage() {
                         color: "white",
                         padding: "4px 8px",
                         display: "inline-block",
+                        maxWidth: "150px",
                       }}
                     >
-                      {assessment.status}
+                      {assessment.status === "completed"
+                        ? "completed by CYRAPID AI"
+                        : assessment.status}
                     </span>
                   </TableCell>
                   <TableCell>
                     <button
-                      className="flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center text-xs font-bold text-white hover:bg-blue-700"
+                      className="flex w-full items-center justify-center rounded-lg px-8 py-4 text-center text-xs font-bold text-white hover:bg-blue-700"
+                      style={{
+                        backgroundColor:
+                          assessment.status !== "completed"
+                            ? "#4285f4"
+                            : "#808080",
+                      }}
                       onClick={() => {
                         localStorage.setItem(
                           "assessment_name",
@@ -145,7 +151,7 @@ export default function HomePage() {
                         navigate(`/compliance-assessment/new`);
                       }}
                     >
-                      CyberRisk and Compliance Assessment
+                      Cyber Risk and Compliance Assessment
                     </button>
                   </TableCell>
                 </TableRow>

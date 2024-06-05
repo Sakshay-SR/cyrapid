@@ -19,7 +19,7 @@ export const Routes = () => {
     user && user["https://sigmared.us.auth0.comroles"]?.includes("HumanAssessor")
       ? "admin"
       : "user";
-  console.log(userRole)
+  console.log(userRole);
   const router = createBrowserRouter([
     {
       element: <PrivateRoutes />,

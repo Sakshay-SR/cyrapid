@@ -1,4 +1,5 @@
 const base_url = "https://cy-meda.azurewebsites.net";
+// const base_url = "http://4.233.136.185:8500";
 
 export async function getPostAssesReport(token: string) {
   const res = await fetch(`${base_url}/dashboard/get_post_assesment_reports/`, {
@@ -146,6 +147,102 @@ export async function fetchAssessmentStatus(
         Authorization: `Bearer ${token}`, // Assuming you need to send a token
       },
       body: {},
+    },
+  );
+  const result = await response.json();
+  return result;
+}
+
+export async function getHITLAssessment(client_id: string, token: string) {
+  const response = await fetch(
+    `${base_url}/hitl/get_dashboard?client_id=${client_id}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+    },
+  );
+  const result = await response.json();
+  return result;
+}
+
+export async function getHITLTableData(
+  client: string,
+  assesment_name: string,
+  user_id: string,
+  token: string,
+) {
+  const response = await fetch(
+    `${base_url}/hitl/get_table?assessment_name=${assesment_name}&user_id=${user_id}&client_id=${client}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+    },
+  );
+  const result = await response.json();
+  return result;
+}
+
+export async function fetchHITLAssessmentStatus(
+  client: string,
+  assesment_name: string,
+  user_id: string,
+  token: string,
+) {
+  const response = await fetch(
+    `${base_url}/hitl/assessments/status?assessment_name=${assesment_name}&user_id=${user_id}&client_id=${client}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+      body: {},
+    },
+  );
+  const result = await response.json();
+  return result;
+}
+
+export async function getHITLSaveContinue(
+  user_id: string,
+  body: object,
+  token: string,
+) {
+  const response = await fetch(
+    `${base_url}/hitl/save_table?user_id=${user_id}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+      body: JSON.stringify(body),
+    },
+  );
+  const result = await response.json();
+  return result;
+}
+
+export async function updateHITLStatus(
+  user_id: string,
+  body: object,
+  token: string,
+) {
+  const response = await fetch(
+    `${base_url}/hitl/update_assessment_status/?user_id=${user_id}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+      body: JSON.stringify(body),
     },
   );
   const result = await response.json();

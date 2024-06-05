@@ -75,8 +75,10 @@ function UserInventoryTable({ token }: tableProps) {
                       }}
                     >
                       {assessment.status === "completed"
-                        ? "completed by CYRAPID AI"
-                        : assessment.status}
+                        ? "Completed by CYRAPID AI"
+                        : assessment.status === "finished"
+                          ? "Completed by CYRAPID AI and Human Assessor"
+                          : assessment.status}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -84,7 +86,8 @@ function UserInventoryTable({ token }: tableProps) {
                       className="flex w-full items-center justify-center rounded-lg px-8 py-4 text-center text-xs font-bold text-white hover:bg-blue-700"
                       style={{
                         backgroundColor:
-                          assessment.status !== "completed"
+                          assessment.status !== "completed" &&
+                          assessment.status !== "finished"
                             ? "#4285f4"
                             : "#808080",
                       }}

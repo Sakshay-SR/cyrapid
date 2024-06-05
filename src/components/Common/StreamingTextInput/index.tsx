@@ -19,26 +19,27 @@ function StreamingTextInput({
   placeholder,
   width,
 }: StreamingTextInputProps) {
-  const [text, setText] = useState("");
-  const [index, setIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (index < targetText.length) {
-        setText(targetText.slice(0, index + 1));
-        setIndex(index + 1);
-      } else {
-        clearInterval(interval);
-      }
-    }, speed); // Change this value to adjust the speed of the streaming effect
+    setDisplayedText(""); // Reset displayed text when target text changes
+    setCurrentIndex(0); // Reset the current index
+  }, [targetText]);
 
-    return () => clearInterval(interval);
-  }, [index, targetText, speed]);
-
+  useEffect(() => {
+    if (currentIndex < targetText.length) {
+      const intervalId = setInterval(() => {
+        setDisplayedText((prev) => prev + targetText[currentIndex]);
+        setCurrentIndex((prev) => prev + 1);
+      }, speed);
+      return () => clearInterval(intervalId);
+    }
+  }, [currentIndex, targetText, speed]);
   return (
     <TextField
       type="text"
-      value={text}
+      value={displayedText}
       label={label !== undefined ? label : undefined}
       placeholder={placeholder}
       variant="standard"
@@ -46,7 +47,7 @@ function StreamingTextInput({
         width: width || "100%",
         "& .MuiInputBase-input.Mui-disabled": {
           WebkitTextFillColor: "#000000",
-          fontSize: '0.875rem',
+          fontSize: "0.875rem",
         },
       }}
       InputLabelProps={{
@@ -54,7 +55,7 @@ function StreamingTextInput({
       }}
       disabled
       onChange={(e) => {
-        setText(e.target.value);
+        setDisplayedText(e.target.value);
         if (handleChange !== undefined) handleChange(e);
       }}
       size="small"

@@ -404,7 +404,13 @@ export default function AssessmentTable() {
     } else if (column === "Updated Comments (If Any) by human Assessor") {
       return (
         <TextField
-          sx={{ width: "400px" }}
+          sx={{
+            width: "400px",
+            "& .MuiInputBase-input.Mui-disabled": {
+              WebkitTextFillColor: "#000000",
+              fontSize: "0.875rem",
+            },
+          }}
           fullWidth
           placeholder="comment"
           variant="standard"
@@ -412,7 +418,8 @@ export default function AssessmentTable() {
             shrink: true,
           }}
           size="small"
-          disabled={completed}
+          disabled
+          multiline
           value={val}
           onChange={(e) => handleDataChange(index, column, e.target.value)}
         />
@@ -453,7 +460,7 @@ export default function AssessmentTable() {
           setColumns(newCols);
           setTableData(transformApiResponse(final));
           setTableLoading(false);
-          if (stat === "completed") {
+          if (stat === "completed" || stat === "finished") {
             setChecked(true);
             setCompleted(true);
             setCertification("ISO 27001");
@@ -717,6 +724,7 @@ export default function AssessmentTable() {
                   onClick={handlePrint}
                   variant="contained"
                 >
+                  <DownloadIcon />
                   Save Assessment Worksheet
                 </Button>
                 <Button

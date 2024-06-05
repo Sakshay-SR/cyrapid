@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import { Table, TableBody, TableRow, TableHead } from "@mui/material";
 import { styled, TableCell as MuiTableCell } from "@mui/material";
-import { getAssessment } from "api/dashboard";
+import { getHITLAssessment } from "api/dashboard";
 import { useNavigate } from "react-router-dom";
 // Styled TableCell with content centered
 const TableCell = styled(MuiTableCell)({
@@ -22,10 +22,10 @@ function HitlInventoryTable({ token }: tableProps) {
     const fetchData = async () => {
       const client_id = "coforge";
       try {
-        const res = await getAssessment(client_id, token);
+        const res = await getHITLAssessment(client_id, token);
         console.log(res, "worked");
-        if (res?.result) {
-          setAssessments(res.result); // Assume res is an array of assessments
+        if (res) {
+          setAssessments(res); // Assume res is an array of assessments
         }
       } catch (error) {
         console.error("Failed to fetch assessments:", error);
@@ -44,30 +44,20 @@ function HitlInventoryTable({ token }: tableProps) {
             <TableRow>
               <TableCell>SL. No.</TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Type of Assessment</TableCell>
+              {/* <TableCell>Type of Assessment</TableCell> */}
               <TableCell>Status</TableCell>
               <TableCell>Link</TableCell>
-              <TableCell>
-                <button
-                  className="flex w-full items-center justify-center rounded-lg px-8 py-4 text-center text-xs font-bold text-white hover:bg-blue-700"
-                  onClick={() => {
-                    localStorage.setItem("assessment_name", "ASSESSMENT-1");
-                    navigate(`/compliance-assessment/new`);
-                  }}
-                >
-                  Cyber Risk and Compliance Assessment
-                </button>
-              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {assessments && assessments.length > 0 ? (
               assessments.map((assessment: any, index: number) => (
                 <TableRow key={index}>
+                  <TableCell>{index + 1}</TableCell>
                   <TableCell>
                     {assessment.assessment_name.toUpperCase()}
                   </TableCell>
-                  <TableCell>{assessment.descriptions}</TableCell>
+                  {/* <TableCell>{assessment.descriptions}</TableCell> */}
                   <TableCell>
                     <span
                       style={{
@@ -85,8 +75,8 @@ function HitlInventoryTable({ token }: tableProps) {
                       }}
                     >
                       {assessment.status === "completed"
-                        ? "completed by CYRAPID AI"
-                        : assessment.status}
+                        ? "Completed by CYRAPID AI"
+                        : "Completed by CYRAPID AI and Human Assessor"}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -94,16 +84,17 @@ function HitlInventoryTable({ token }: tableProps) {
                       className="flex w-full items-center justify-center rounded-lg px-8 py-4 text-center text-xs font-bold text-white hover:bg-blue-700"
                       style={{
                         backgroundColor:
-                          assessment.status !== "completed"
+                          assessment.status === "completed"
                             ? "#4285f4"
                             : "#808080",
                       }}
                       onClick={() => {
-                        localStorage.setItem(
-                          "assessment_name",
-                          assessment.assessment_name,
-                        );
-                        navigate(`/compliance-assessment/new`);
+                        navigate(`/compliance-assessment/new`, {
+                          state: {
+                            assessmentName: assessment.assessment_name,
+                            userId: assessment.user_id,
+                          },
+                        });
                       }}
                     >
                       Cyber Risk and Compliance Assessment

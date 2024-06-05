@@ -32,40 +32,21 @@ import {
 import LogoutIcon from "@mui/icons-material/Logout";
 import Pagination from "@mui/material/Pagination";
 import {
-  getPostAssesReport,
-  getPreAssesReport,
-  getSaveContinue,
-  updateAssessment,
-  fetchUpdatedTableData,
-  fetchAssessmentStatus,
+  getHITLSaveContinue,
+  updateHITLStatus,
+  getHITLTableData,
+  fetchHITLAssessmentStatus,
 } from "api/dashboard";
 import { BarLoader, PropagateLoader, PulseLoader } from "react-spinners";
 import StreamingTextInput from "components/Common/StreamingTextInput";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-// type GetPreAssesReportType = {
-//   "Assessee Comments": any;
-//   "Assessor Comment (by CYRAPID AI)": any;
-//   "Compliance Category": any;
-//   "Control Name": any;
-//   "Control Number": any;
-//   "Control Question": any;
-//   Domain: any;
-//   Findings: any;
-//   "Findings Category": any;
-//   "Justification For Assessor Comment (by CYRAPID AI)": any;
-//   "Policy or Process Document Name (PDF)": any;
-//   "Recommendations For Compliance": any;
-//   Remarks: any;
-//   Subdomain: any;
-//   "Updated Comments (If Any) by human Assessor": any;
-// };
 
 type TableData = {
   [columnName: string]: { [rowIndex: number]: string };
@@ -108,7 +89,6 @@ const StyledTableCell = styled(TableCell)(({ index }) => ({
 
 export default function HITLAssessmentTable() {
   const [tableData, setTableData] = React.useState<TableRowData[]>([]);
-  const [status, setStatus] = React.useState<string>("pending");
   const [columns, setColumns] = React.useState<string[]>([]);
   const token = localStorage.getItem("token");
   const [certification, setCertification] = React.useState("");
@@ -119,18 +99,45 @@ export default function HITLAssessmentTable() {
   const [tableLoading, setTableLoading] = React.useState(false);
   const contentRef = React.useRef(null);
   const [openDialog, setOpenDialog] = React.useState(false);
-  const assessment_name =
-    localStorage.getItem("assessment_name") || "sample assesment";
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [page, setPage] = React.useState(1);
   const [completed, setCompleted] = React.useState(false);
   const [pdfClicked, setPdfClicked] = React.useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const assessmentName = location.state?.assessmentName;
+  const userId = location.state?.userId;
 
   const handleChangePage = (
     event: React.ChangeEvent<unknown>,
     newPage: number,
   ) => {
-    setPage(newPage);
+    if (areCurrentPageTextFieldsFilled()) {
+      setPage(newPage);
+    } else {
+      toast.error("Please fill all the text fields before changing page.");
+    }
+  };
+
+  const areCurrentPageTextFieldsFilled = () => {
+    const startIndex = (page - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
+    for (let i = startIndex; i < endIndex; i++) {
+      if (!tableData[i]?.["Updated Comments (If Any) by human Assessor"]) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const areAllTextFieldsFilled = () => {
+    for (let i = 0; i < tableData.length; i++) {
+      if (!tableData[i]?.["Updated Comments (If Any) by human Assessor"]) {
+        return false;
+      }
+    }
+    return true;
   };
 
   // Calculate the first and last row index for the current page
@@ -156,25 +163,30 @@ export default function HITLAssessmentTable() {
   };
 
   const HandleSubmitComplete = async () => {
-    if (token) {
+    if (areAllTextFieldsFilled()) {
       setLoading(true);
       const body = {
         client_id: "coforge",
-        assessment_name: assessment_name,
+        assessment_name: assessmentName,
         cyber_risk_table: prepareDataForApi(tableData, columns),
       };
       try {
-        const saveContinueResponse = await getSaveContinue(body, token);
+        const saveContinueResponse = await getHITLSaveContinue(
+          userId,
+          body,
+          token,
+        );
         console.log("SaveContinue responsse:", saveContinueResponse);
         toast.success("Data saved successfully!");
 
         const updateAssessmentBody = {
-          status: "completed",
-          assessment_name: assessment_name,
+          status: "finished",
+          assessment_name: assessmentName,
           client_id: "coforge",
         };
 
-        const updateAssessmentResponse = await updateAssessment(
+        const updateAssessmentResponse = await updateHITLStatus(
+          userId,
           updateAssessmentBody,
           token,
         );
@@ -189,45 +201,8 @@ export default function HITLAssessmentTable() {
         toast.error(`Error: ${error.message}`);
       }
     } else {
-      console.log("No token and data");
-    }
-  };
-
-  const HandleSubmitLater = async () => {
-    if (token) {
-      setLoading(true);
-      const body = {
-        client_id: "coforge",
-        assessment_name: localStorage.getItem("assessment_name"),
-        cyber_risk_table: prepareDataForApi(tableData, columns),
-      };
-      try {
-        const saveContinueResponse = await getSaveContinue(body, token);
-        console.log("SaveContinue response:", saveContinueResponse);
-        toast.success("Data saved successfully!");
-
-        const updateAssessmentBody = {
-          status: "pending",
-          assessment_name: assessment_name,
-          client_id: "coforge",
-        };
-
-        const updateAssessmentResponse = await updateAssessment(
-          updateAssessmentBody,
-          token,
-        );
-        console.log("UpdateAssessment response:", updateAssessmentResponse);
-        toast.success("Assessment status updated to Pending.");
-
-        // Fetch updated table data
-        navigate("/");
-      } catch (error: any) {
-        setLoading(false);
-        console.error("Error during API calls:", error);
-        toast.error(`Error: ${error.message}`);
-      }
-    } else {
-      console.log("No token and data");
+      toast.error("Please fill all the text fields before saving.");
+      setOpenDialog(false);
     }
   };
 
@@ -279,8 +254,7 @@ export default function HITLAssessmentTable() {
   };
 
   const handleSaveForLater = async () => {
-    await HandleSubmitLater();
-    navigate("/");
+    await HandleSubmitComplete();
   };
 
   const handleOpenDialog = () => {
@@ -289,50 +263,6 @@ export default function HITLAssessmentTable() {
 
   const handleChange = (event: SelectChangeEvent) => {
     setCertification(event.target.value);
-  };
-
-  const HandleCyRapidButton = async () => {
-    if (tableData && tableData.length) {
-      setLoading(true);
-      setTableLoading(true);
-      setTimeout(() => {
-        setTableLoading(false);
-        setLoading(false);
-      }, 10000);
-      try {
-        const res = await getPostAssesReport(token);
-        const cols = Object.keys(res[0]);
-        const newCols = cols.filter((item) => {
-          if (
-            item !== "Domain" &&
-            item !== "Subdomain" &&
-            item !== "Policy or Process Document Name (PDF)"
-          ) {
-            return item;
-          }
-        });
-        const assessor = res.map(
-          (item) => item["Assessor Comment (by CYRAPID AI)"],
-        );
-        const justification = res.map(
-          (item) => item["Justification For Assessor Comment (by CYRAPID AI)"],
-        );
-        const prevTable = tableData.map((item, ind) => {
-          return {
-            ...item,
-            "Assessor Comment (by CYRAPID AI)": assessor[ind],
-            "Justification For Assessor Comment (by CYRAPID AI)":
-              justification[ind],
-          };
-        });
-        console.log(prevTable);
-        setTableData(prevTable);
-        setChecked(true);
-        console.log("Status is pending. Perform normal operations.");
-      } catch (error: any) {
-        console.log(error);
-      }
-    }
   };
 
   const handleDataChange = (
@@ -367,6 +297,22 @@ export default function HITLAssessmentTable() {
     }
   };
 
+  const handleCopyJustification = (index: number) => {
+    const actualRowIndex = index + (page - 1) * rowsPerPage;
+    console.log(actualRowIndex, "index");
+    const updatedRows = [...tableData];
+    const justification =
+      updatedRows[actualRowIndex]?.[
+        "Justification For Assessor Comment (by CYRAPID AI)"
+      ] || "";
+    updatedRows[actualRowIndex] = {
+      ...updatedRows[actualRowIndex],
+      "Updated Comments (If Any) by human Assessor": justification,
+    };
+    console.log(justification);
+    setTableData(updatedRows);
+  };
+
   const renderCell = (value: string, column: string, index: number) => {
     const actualRowIndex = index + (page - 1) * rowsPerPage;
     const val = tableData[actualRowIndex][column] ?? "";
@@ -393,98 +339,95 @@ export default function HITLAssessmentTable() {
       //     </FormControl>
       //   );
     } else if (column.toLowerCase().includes("(by cyrapid ai)")) {
+      console.log(value);
       return (
         <StreamingTextInput
-          placeholder="Click CYRAPID AI Button to get comments"
+          placeholder=""
           speed={10}
           width="400px"
-          targetText={checked && !loading ? (val !== null ? val : "") : ""}
+          targetText={checked && !loading ? (value !== null ? value : "") : ""}
         />
       );
     } else if (column === "Updated Comments (If Any) by human Assessor") {
       return (
-        <TextField
-          sx={{ width: "400px" }}
-          fullWidth
-          placeholder="comment"
-          variant="standard"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          size="small"
-          disabled={completed}
-          value={val}
-          onChange={(e) => handleDataChange(index, column, e.target.value)}
-        />
+        <div style={{ height: "auto" }}>
+          <TextField
+            sx={{
+              width: "400px",
+              fontSize: "0.875rem",
+              "& .MuiInputBase-input.Mui-disabled": {
+                WebkitTextFillColor: "#000000",
+                fontSize: "0.875rem",
+              },
+            }}
+            fullWidth
+            placeholder="comment"
+            variant="standard"
+            inputProps={{ style: { fontSize: "0.875rem" } }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            size="small"
+            multiline
+            value={val}
+            disabled={completed}
+            onChange={(e) => handleDataChange(index, column, e.target.value)}
+          />
+          {!completed && (
+            <Button
+              sx={{ float: "right", marginTop: "5px" }}
+              variant="contained"
+              onClick={() => handleCopyJustification(index)}
+            >
+              Copy Justification
+            </Button>
+          )}
+        </div>
       );
     }
     return val;
   };
 
-
   React.useEffect(() => {
     const initializeData = async () => {
       setTableLoading(true);
       const client_id = "coforge";
-      const result = await fetchAssessmentStatus(
+      const result = await fetchHITLAssessmentStatus(
         client_id,
-        assessment_name,
+        assessmentName,
+        userId,
         token,
       );
       const status = result?.result[0].status;
-      console.log(status);
-      if (status === "created") {
-        const res = await getPostAssesReport(token);
-        const cols = Object.keys(res[0]);
-        const newCols = cols.filter((item) => {
-          if (
-            item !== "Domain" &&
-            item !== "Subdomain" &&
-            item !== "Policy or Process Document Name (PDF)"
-          ) {
-            return item;
-          }
-        });
-        setColumns(newCols);
-        setTableData(res);
-        setTableLoading(false);
-        console.log("Status is pending. Perform normal operations.");
-      } else {
-        const response = await fetchUpdatedTableData(
-          client_id,
-          assessment_name,
-          token,
-        );
-        const finalTable: TableData = response?.result[0]["cyber_risk_table"];
-        const cols = Object.keys(finalTable);
-        const newCols = cols.filter((item) => {
-          if (
-            item !== "Domain" &&
-            item !== "Subdomain" &&
-            item !== "Policy or Process Document Name (PDF)"
-          ) {
-            return item;
-          }
-        });
-        setColumns(newCols);
-        setTableData(transformApiResponse(finalTable));
-        setTableLoading(false);
-        console.log("API Response finished");
-      }
+      const response = await getHITLTableData(
+        client_id,
+        assessmentName,
+        userId,
+        token,
+      );
+      const finalTable: TableData = response?.result[0]["cyber_risk_table"];
+      const cols = Object.keys(finalTable);
+      const newCols = cols.filter((item) => {
+        if (
+          item !== "Domain" &&
+          item !== "Subdomain" &&
+          item !== "Policy or Process Document Name (PDF)"
+        ) {
+          return item;
+        }
+      });
+      setPage(1);
+      setColumns(newCols);
+      setTableData(transformApiResponse(finalTable));
+      setTableLoading(false);
+      setChecked(true);
+      setCertification("ISO 27001");
+      if (status === "finished") setCompleted(true);
+      console.log("API Response finished");
     };
 
     initializeData();
   }, []);
-
-  // React.useEffect(() => {
-  //   if (checked) {
-  //     setTimeout(() => {
-  //       setLoading(false);
-  //     }, 5000);
-  //   }
-  // }, [checked]);
-
-  const navigate = useNavigate();
 
   return (
     <div
@@ -551,7 +494,7 @@ export default function HITLAssessmentTable() {
               label={"Control Framework"}
               value={certification}
               onChange={handleChange}
-              disabled={completed || tableLoading}
+              disabled
             >
               <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
               <MenuItem value={"NIS2"} disabled>
@@ -581,10 +524,168 @@ export default function HITLAssessmentTable() {
           <DialogActions>
             <Button onClick={handleCloseDialog}>Ignore</Button>
             <Button onClick={handleSaveForLater} autoFocus>
-              Save for Later
+              Save & Complete
             </Button>
           </DialogActions>
         </Dialog>
+        {certification === "ISO 27001" && (
+          <>
+            <div className="flex w-full flex-col items-start justify-center gap-4 rounded-xl bg-white py-6">
+              <Box>Domain :</Box>
+              <FormControl fullWidth>
+                <InputLabel id="label1">Choose your Domain</InputLabel>
+                <Select
+                  labelId="label1"
+                  id="demo-simple-select-standard"
+                  label="Organizational Controls"
+                  defaultValue={"Organizational Controls"}
+                  value={domain}
+                  disabled
+                >
+                  <MenuItem value={"Organizational Controls"}>
+                    Organizational Controls
+                  </MenuItem>
+                  <MenuItem value={"People Controls"}>People Controls</MenuItem>
+                  <MenuItem value={"Physical Controls"}>
+                    Physical Controls
+                  </MenuItem>
+                  <MenuItem value={"Technological controls"}>
+                    Technological controls
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </div>
+            {/* CyRapid Buttons  */}
+            <div className="mt-10 flex w-full justify-end items-center gap-4">
+              <div className="flex gap-4">
+                {/* <Button
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                  onClick={HandleSubmitLater}
+                  variant="contained"
+                  disabled={loading || tableLoading || completed}
+                >
+                  Save For Later
+                </Button> */}
+                <Button
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                  onClick={HandleSubmitComplete}
+                  variant="contained"
+                  disabled={loading || tableLoading || completed}
+                >
+                  Save & Complete
+                </Button>
+                <Button
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                  onClick={() => setPdfClicked(!pdfClicked)}
+                  variant="contained"
+                  disabled={(!checked || loading || tableLoading) && !completed}
+                >
+                  <DownloadIcon />
+                  Save as Pdf
+                </Button>
+              </div>
+            </div>
+            {pdfClicked && (
+              <div className="flex w-full justify-end items-center gap-4">
+                <Button
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                  onClick={handlePrint}
+                  variant="contained"
+                >
+                  <DownloadIcon />
+                  Save Assessment Worksheet
+                </Button>
+                <Button
+                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
+                  onClick={handlePrint}
+                  variant="contained"
+                  disabled
+                >
+                  <DownloadIcon />
+                  Save Assessment Report
+                </Button>
+              </div>
+            )}
+
+            <div className=" flex w-full items-center justify-between rounded-t-md bg-[#004ab9] p-4">
+              <div className="  text-xl font-bold text-white">
+                Cyber Risk Assessment Form
+              </div>
+            </div>
+            {!tableLoading ? (
+              <Paper sx={{ width: "100%", overflow: "hidden" }}>
+                <TableContainer
+                  component={Paper}
+                  ref={contentRef}
+                  sx={{
+                    borderRadius: "0",
+                    position: "relative",
+                    maxHeight: "calc(100vh - 100px)",
+                  }}
+                >
+                  <Table>
+                    <TableHead
+                      sx={{
+                        backgroundColor: "#333",
+                        color: "#fff",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 1,
+                      }}
+                    >
+                      <TableRow
+                        sx={{
+                          whiteSpace: "nowrap",
+                          fontSize: "20px",
+                          fontWeight: "600",
+                          padding: "1.5rem",
+                          borderRadius: "0",
+                        }}
+                      >
+                        {columns.map((column, colIndex) => (
+                          <TableColumnHeaders key={column} index={colIndex}>
+                            {column}
+                          </TableColumnHeaders>
+                        ))}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody sx={{ overflowY: "auto" }}>
+                      {tableData
+                        .slice((page - 1) * rowsPerPage, page * rowsPerPage)
+                        .map((row, index) => (
+                          <TableRow key={index}>
+                            {columns.map((column, colIndex) => (
+                              <StyledTableCell
+                                key={`${index}-${column}`}
+                                index={colIndex}
+                              >
+                                {renderCell(row[column], column, index)}
+                              </StyledTableCell>
+                            ))}
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <Pagination
+                  count={Math.ceil(tableData.length / rowsPerPage)}
+                  page={page}
+                  onChange={handleChangePage}
+                  color="primary"
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center", // Centers the pagination in its container
+                    my: 2, // Adds margin top for spacing
+                  }}
+                />
+              </Paper>
+            ) : (
+              <div className="mt-10 flex h-20 w-[90%] flex-col items-center justify-center">
+                <PulseLoader color="#36d7b7" loading />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

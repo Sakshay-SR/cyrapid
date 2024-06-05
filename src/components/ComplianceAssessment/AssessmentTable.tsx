@@ -370,6 +370,7 @@ export default function AssessmentTable() {
   const renderCell = (value: string, column: string, index: number) => {
     const actualRowIndex = index + (page - 1) * rowsPerPage;
     const val = tableData[actualRowIndex][column] ?? "";
+    console.log(tableData[actualRowIndex],'piyu')
     const compliance = {
       yes: "Compliant",
       no: "Non-compliant",

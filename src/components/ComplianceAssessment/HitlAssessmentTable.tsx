@@ -10,7 +10,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import Paper from "@mui/material/Paper";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Background1 from "../../assets/background2.png";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import {
   Box,
@@ -303,9 +303,7 @@ export default function HITLAssessmentTable() {
     console.log(actualRowIndex, "index");
     const updatedRows = [...tableData];
     const justification =
-      updatedRows[actualRowIndex]?.[
-        "Justification For Assessor Comment (by CYRAPID AI)"
-      ] || "";
+      updatedRows[actualRowIndex]?.["Assessor Comment (by CYRAPID AI)"] || "";
     updatedRows[actualRowIndex] = {
       ...updatedRows[actualRowIndex],
       "Updated Comments (If Any) by human Assessor": justification,
@@ -352,15 +350,14 @@ export default function HITLAssessmentTable() {
     } else if (column === "Updated Comments (If Any) by human Assessor") {
       return (
         <div style={{ height: "auto" }}>
-         {!completed && (
+          {!completed && (
             <Button
               sx={{ float: "right", marginTop: "5px" }}
               variant="contained"
               onClick={() => handleCopyJustification(index)}
               title="Copy Justification"
             >
-              <ContentCopyIcon/>
-              
+              <ContentCopyIcon />
             </Button>
           )}
           <TextField
@@ -385,7 +382,6 @@ export default function HITLAssessmentTable() {
             disabled={completed}
             onChange={(e) => handleDataChange(index, column, e.target.value)}
           />
-         
         </div>
       );
     }

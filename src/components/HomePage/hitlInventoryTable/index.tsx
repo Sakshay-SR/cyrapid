@@ -71,11 +71,12 @@ function HitlInventoryTable({ token }: tableProps) {
                         color: "white",
                         padding: "4px 8px",
                         display: "inline-block",
-                        maxWidth: "150px",
+                        maxWidth: "200px",
                       }}
+                      className="text-xs"
                     >
                       {assessment.status === "completed"
-                        ? "Completed by CYRAPID AI"
+                        ? "Completed by CYRAPID AI and Pending for Human Assessor"
                         : "Completed by CYRAPID AI and Human Assessor"}
                     </span>
                   </TableCell>

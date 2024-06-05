@@ -317,14 +317,22 @@ export default function AssessmentTable() {
         const justification = res.map(
           (item) => item["Justification For Assessor Comment (by CYRAPID AI)"],
         );
-        const prevTable = tableData.map((item, ind) => {
-          return {
-            ...item,
-            "Assessor Comment (by CYRAPID AI)": assessor[ind],
-            "Justification For Assessor Comment (by CYRAPID AI)":
-              justification[ind],
-          };
-        });
+        let prevTable;
+        if(status === "created"){
+          prevTable = tableData.map((item, ind) => {
+            return res[ind]
+          });
+        }else{
+          prevTable = tableData.map((item, ind) => {
+            return {
+              ...item,
+              "Assessor Comment (by CYRAPID AI)": assessor[ind],
+              "Justification For Assessor Comment (by CYRAPID AI)":
+                justification[ind],
+            };
+          });
+
+        }
         console.log(prevTable);
         setTableData(prevTable);
         setChecked(true);

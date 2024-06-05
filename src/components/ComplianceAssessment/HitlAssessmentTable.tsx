@@ -10,6 +10,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import Paper from "@mui/material/Paper";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Background1 from "../../assets/background2.png";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import {
   Box,
@@ -351,6 +352,17 @@ export default function HITLAssessmentTable() {
     } else if (column === "Updated Comments (If Any) by human Assessor") {
       return (
         <div style={{ height: "auto" }}>
+         {!completed && (
+            <Button
+              sx={{ float: "right", marginTop: "5px" }}
+              variant="contained"
+              onClick={() => handleCopyJustification(index)}
+              title="Copy Justification"
+            >
+              <ContentCopyIcon/>
+              
+            </Button>
+          )}
           <TextField
             sx={{
               width: "400px",
@@ -373,15 +385,7 @@ export default function HITLAssessmentTable() {
             disabled={completed}
             onChange={(e) => handleDataChange(index, column, e.target.value)}
           />
-          {!completed && (
-            <Button
-              sx={{ float: "right", marginTop: "5px" }}
-              variant="contained"
-              onClick={() => handleCopyJustification(index)}
-            >
-              Copy Justification
-            </Button>
-          )}
+         
         </div>
       );
     }
@@ -656,6 +660,7 @@ export default function HITLAssessmentTable() {
                           <TableRow key={index}>
                             {columns.map((column, colIndex) => (
                               <StyledTableCell
+                                sx={{}}
                                 key={`${index}-${column}`}
                                 index={colIndex}
                               >

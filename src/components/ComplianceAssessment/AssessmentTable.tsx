@@ -82,13 +82,13 @@ const TableColumnHeaders = styled(TableCell)(({ index }) => ({
     border: "none",
     textAlign: "left",
     padding: "5px",
-    textAlign: index === 0 ? "center" : "left", // Center align only the first column
+    textAlign: index === 0 ? "center" : "center", // Center align only the first column
     minWidth: index === 0 ? "50px" : "250px",
   },
   [`&.${tableCellClasses.body}`]: {
     padding: "5px",
     fontSize: "20px",
-    textAlign: index === 0 ? "center" : "left", // Center align only the first column
+    textAlign: index === 0 ? "center" : "center", // Center align only the first column
     minWidth: index === 0 ? "50px" : "250px",
   },
 }));
@@ -318,11 +318,11 @@ export default function AssessmentTable() {
           (item) => item["Justification For Assessor Comment (by CYRAPID AI)"],
         );
         let prevTable;
-        if(status === "created"){
+        if (status === "created") {
           prevTable = tableData.map((item, ind) => {
-            return res[ind]
+            return res[ind];
           });
-        }else{
+        } else {
           prevTable = tableData.map((item, ind) => {
             return {
               ...item,
@@ -331,7 +331,6 @@ export default function AssessmentTable() {
                 justification[ind],
             };
           });
-
         }
         console.log(prevTable);
         setTableData(prevTable);
@@ -378,7 +377,7 @@ export default function AssessmentTable() {
   const renderCell = (value: string, column: string, index: number) => {
     const actualRowIndex = index + (page - 1) * rowsPerPage;
     const val = tableData[actualRowIndex][column] ?? "";
-    console.log(tableData[actualRowIndex],'piyu')
+    console.log(tableData[actualRowIndex], "piyu");
     const compliance = {
       yes: "Compliant",
       no: "Non-compliant",
@@ -402,10 +401,33 @@ export default function AssessmentTable() {
       //     </FormControl>
       //   );
     } else if (column.toLowerCase().includes("(by cyrapid ai)")) {
+      if (status === "completed" || status === "finished") {
+        return (
+          <TextField
+            sx={{
+              width: "400px",
+              "& .MuiInputBase-input.Mui-disabled": {
+                WebkitTextFillColor: "#000000",
+                fontSize: "0.875rem",
+              },
+            }}
+            fullWidth
+            placeholder=""
+            variant="standard"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            size="small"
+            disabled
+            multiline
+            value={val}
+          />
+        );
+      }
       return (
         <StreamingTextInput
           placeholder="Click CYRAPID AI Button to get comments"
-          speed={10}
+          speed={25}
           width="400px"
           targetText={checked && !loading ? (val !== null ? val : "") : ""}
         />

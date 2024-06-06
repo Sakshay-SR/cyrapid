@@ -88,9 +88,9 @@ export default function LoginPage() {
         <ToastContainer />
         <div className="mx-auto py-24 flex w-fit flex-col items-center shadow-2xl justify-center gap-2 rounded-lg bg-white px-16">
           <img src={SigmaredLogo} width="250" className="mb-8" alt="Logo" />
-          <div className="text-xl font-semibold">Welcome to CyRapid</div>
+          <div className="text-xl font-semibold">Welcome to CYRAPID</div>
           <div className="text-slate-500 mb-12">
-            Sign in to continue to CyRapid
+            Sign in to continue to CYRAPID
           </div>
           {/* <div className="flex items-center justify-start gap-4 rounded-lg bg-[#e8f0fe] p-4">
             <EmailIcon width="28" height="28" fill="rgb(100 116 139)" />

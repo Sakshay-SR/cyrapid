@@ -64,13 +64,13 @@ const TableColumnHeaders = styled(TableCell)(({ index }) => ({
     border: "none",
     textAlign: "left",
     padding: "5px",
-    textAlign: index === 0 ? "center" : "left", // Center align only the first column
+    textAlign: index === 0 ? "center" : "center", // Center align only the first column
     minWidth: index === 0 ? "50px" : "250px",
   },
   [`&.${tableCellClasses.body}`]: {
     padding: "5px",
     fontSize: "20px",
-    textAlign: index === 0 ? "center" : "left", // Center align only the first column
+    textAlign: index === 0 ? "center" : "center", // Center align only the first column
     minWidth: index === 0 ? "50px" : "250px",
   },
 }));
@@ -116,7 +116,9 @@ export default function HITLAssessmentTable() {
     if (areCurrentPageTextFieldsFilled()) {
       setPage(newPage);
     } else {
-      toast.error("Please fill all the text fields before changing page.");
+      toast.error(
+        "Please complete human comments for all comments on this page.",
+      );
     }
   };
 
@@ -125,7 +127,7 @@ export default function HITLAssessmentTable() {
     const endIndex = startIndex + rowsPerPage;
 
     for (let i = startIndex; i < endIndex; i++) {
-      if (!tableData[i]?.["Updated Comments (If Any) by human Assessor"]) {
+      if (!tableData[i]?.["Updated Comments (If Any) by human Assessor"] || !tableData[i]?.["Findings Category"]) {
         return false;
       }
     }
@@ -134,7 +136,7 @@ export default function HITLAssessmentTable() {
 
   const areAllTextFieldsFilled = () => {
     for (let i = 0; i < tableData.length; i++) {
-      if (!tableData[i]?.["Updated Comments (If Any) by human Assessor"]) {
+      if (!tableData[i]?.["Updated Comments (If Any) by human Assessor"] || !tableData[i]?.["Findings Category"]) {
         return false;
       }
     }
@@ -202,7 +204,7 @@ export default function HITLAssessmentTable() {
         toast.error(`Error: ${error.message}`);
       }
     } else {
-      toast.error("Please fill all the text fields before saving.");
+      toast.error("Please complete human comments for all controls.");
       setOpenDialog(false);
     }
   };
@@ -322,29 +324,44 @@ export default function HITLAssessmentTable() {
     };
     if (column.toLowerCase().includes("compliance category")) {
       return compliance[value];
-      // } else if (column.toLowerCase().includes("findings category")) {
-      //   return (
-      //     <FormControl fullWidth>
-      //       <Select
-      //         value={val}
-      //         onChange={(e) => handleDataChange(index, column, e.target.value)}
-      //         displayEmpty
-      //       >
-      //         <MenuItem value="Critical">Critical</MenuItem>
-      //         <MenuItem value="High">High</MenuItem>
-      //         <MenuItem value="Medium">Medium</MenuItem>
-      //         <MenuItem value="Low">Low</MenuItem>
-      //       </Select>
-      //     </FormControl>
-      //   );
+    } else if (column.toLowerCase().includes("findings category")) {
+      return (
+        <FormControl fullWidth>
+          <Select
+            value={val}
+            onChange={(e) => handleDataChange(index, column, e.target.value)}
+            displayEmpty
+            placeholder="Findings Category"
+          >
+            <MenuItem value="" disabled hidden>None</MenuItem>
+            <MenuItem value="Critical">Critical</MenuItem>
+            <MenuItem value="High">High</MenuItem>
+            <MenuItem value="Medium">Medium</MenuItem>
+            <MenuItem value="Low">Low</MenuItem>
+          </Select>
+        </FormControl>
+      );
     } else if (column.toLowerCase().includes("(by cyrapid ai)")) {
       console.log(value);
       return (
-        <StreamingTextInput
+        <TextField
+          sx={{
+            width: "400px",
+            "& .MuiInputBase-input.Mui-disabled": {
+              WebkitTextFillColor: "#000000",
+              fontSize: "0.875rem",
+            },
+          }}
+          fullWidth
           placeholder=""
-          speed={10}
-          width="400px"
-          targetText={checked && !loading ? (value !== null ? value : "") : ""}
+          variant="standard"
+          InputLabelProps={{
+            shrink: true,
+          }}
+          size="small"
+          disabled
+          multiline
+          value={val}
         />
       );
     } else if (column === "Updated Comments (If Any) by human Assessor") {
@@ -352,12 +369,19 @@ export default function HITLAssessmentTable() {
         <div style={{ height: "auto" }}>
           {!completed && (
             <Button
-              sx={{ float: "right", marginTop: "5px" }}
+              sx={{
+                float: "right",
+                marginTop: "5px",
+                padding: "2px",
+                minWidth: "30px",
+                fontSize: "10px",
+              }}
               variant="contained"
+              size="small"
               onClick={() => handleCopyJustification(index)}
-              title="Copy Justification"
+              title="Copy CYRAPID AI comment here"
             >
-              <ContentCopyIcon />
+              <ContentCopyIcon fontSize="small" />
             </Button>
           )}
           <TextField

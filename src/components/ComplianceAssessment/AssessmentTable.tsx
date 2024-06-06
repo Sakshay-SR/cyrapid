@@ -11,6 +11,7 @@ import Paper from "@mui/material/Paper";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Background1 from "../../assets/background2.png";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import EditIcon from '@mui/icons-material/Edit';
 import {
   Box,
   Button,
@@ -49,6 +50,7 @@ import { toast } from "react-toastify";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import EditableTextBox from "components/Common/EditableTextBox";
 // type GetPreAssesReportType = {
 //   "Assessee Comments": any;
 //   "Assessor Comment (by CYRAPID AI)": any;
@@ -125,7 +127,7 @@ export default function AssessmentTable() {
   const [page, setPage] = React.useState(1);
   const [completed, setCompleted] = React.useState(false);
   const [pdfClicked, setPdfClicked] = React.useState(false);
-
+  
   const handleChangePage = (
     event: React.ChangeEvent<unknown>,
     newPage: number,
@@ -375,6 +377,7 @@ export default function AssessmentTable() {
   };
 
   const renderCell = (value: string, column: string, index: number) => {
+    console.log(column)
     const actualRowIndex = index + (page - 1) * rowsPerPage;
     const val = tableData[actualRowIndex][column] ?? "";
     console.log(tableData[actualRowIndex], "piyu");
@@ -383,6 +386,10 @@ export default function AssessmentTable() {
       no: "Non-compliant",
       partially: "Partially Compliant",
     };
+    if(column.toLowerCase() === "findings" || column.toLowerCase().includes("recommendations for compliance") ){
+      return (<EditableTextBox value={val} onChange={(e) => handleDataChange(index, column, e.target.value)} />)
+     
+    }
     if (column.toLowerCase().includes("compliance category")) {
       return compliance[value];
       // } else if (column.toLowerCase().includes("findings category")) {
@@ -491,6 +498,8 @@ export default function AssessmentTable() {
           setColumns(newCols);
           setTableData(transformApiResponse(final));
           setTableLoading(false);
+          contentRef && contentRef.current && contentRef.current.scrollIntoView({ behavior: 'smooth' }) 
+
           if (stat === "completed" || stat === "finished") {
             setChecked(true);
             setCompleted(true);
@@ -511,6 +520,8 @@ export default function AssessmentTable() {
           setColumns(newCols);
           setTableData(res);
           setTableLoading(false);
+          contentRef && contentRef.current && contentRef.current.scrollIntoView({ behavior: 'smooth' }) 
+
           console.log("Status is pending. Perform normal operations.");
         }
       } catch (error: any) {
@@ -518,8 +529,9 @@ export default function AssessmentTable() {
       }
     };
     initializeData();
+    contentRef && contentRef.current && contentRef.current.scrollIntoView({ behavior: 'smooth' }) 
   }, []);
-
+  React.useEffect(() => { contentRef && contentRef.current && contentRef.current.scrollIntoView({ behavior: 'smooth' }) }, [contentRef])
   // React.useEffect(() => {
   //   const initializeData = async () => {
   //     setTableLoading(true);
@@ -698,6 +710,7 @@ export default function AssessmentTable() {
                   disabled={completed}
                   onChange={(e) => {
                     setDomain(e.target.value);
+                    contentRef.current.scrollIntoView({ behavior: 'smooth' })
                   }}
                 >
                   <MenuItem value={"Organizational Controls"}>
@@ -795,17 +808,19 @@ export default function AssessmentTable() {
               </Button>
             </div>
             {!tableLoading ? (
-              <Paper sx={{ width: "100%", overflow: "hidden" }}>
+              <Paper sx={{ width: "100%", overflow: "auto" }}>
                 <TableContainer
                   component={Paper}
                   ref={contentRef}
+
                   sx={{
                     borderRadius: "0",
                     position: "relative",
-                    maxHeight: "calc(100vh - 100px)",
+                    maxHeight: "calc(100vh - 100px)"
                   }}
                 >
-                  <Table>
+                  <Table >
+
                     <TableHead
                       sx={{
                         backgroundColor: "#333",
@@ -813,6 +828,8 @@ export default function AssessmentTable() {
                         position: "sticky",
                         top: 0,
                         zIndex: 1,
+                        borderRadius: "0",
+                        overflowX: 'auto'
                       }}
                     >
                       <TableRow
@@ -822,6 +839,7 @@ export default function AssessmentTable() {
                           fontWeight: "600",
                           padding: "1.5rem",
                           borderRadius: "0",
+                          overflowX: 'auto'
                         }}
                       >
                         {columns.map((column, colIndex) => (
@@ -831,7 +849,8 @@ export default function AssessmentTable() {
                         ))}
                       </TableRow>
                     </TableHead>
-                    <TableBody sx={{ overflowY: "auto" }}>
+                    <TableBody >
+
                       {tableData
                         .slice((page - 1) * rowsPerPage, page * rowsPerPage)
                         .map((row, index) => (
@@ -847,6 +866,7 @@ export default function AssessmentTable() {
                           </TableRow>
                         ))}
                     </TableBody>
+
                   </Table>
                 </TableContainer>
                 <Pagination

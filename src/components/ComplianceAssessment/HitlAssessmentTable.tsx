@@ -164,6 +164,43 @@ export default function HITLAssessmentTable() {
 
     return apiData;
   };
+  const HandleSubmitLater = async () => {
+    if (token) {
+      setLoading(true);
+      const body = {
+        client_id: "coforge",
+        assessment_name: localStorage.getItem("assessment_name"),
+        cyber_risk_table: prepareDataForApi(tableData, columns),
+      };
+      try {
+        const saveContinueResponse = await getSaveContinue(body, token);
+        console.log("SaveContinue response:", saveContinueResponse);
+        toast.success("Data saved successfully!");
+
+        const updateAssessmentBody = {
+          status: "pending",
+          assessment_name: assessment_name,
+          client_id: "coforge",
+        };
+
+        const updateAssessmentResponse = await updateAssessment(
+          updateAssessmentBody,
+          token,
+        );
+        console.log("UpdateAssessment response:", updateAssessmentResponse);
+        toast.success("Assessment status updated to Pending.");
+
+        // Fetch updated table data
+        navigate("/");
+      } catch (error: any) {
+        setLoading(false);
+        console.error("Error during API calls:", error);
+        toast.error(`Error: ${error.message}`);
+      }
+    } else {
+      console.log("No token and data");
+    }
+  };
 
   const HandleSubmitComplete = async () => {
     if (areAllTextFieldsFilled()) {
@@ -257,7 +294,7 @@ export default function HITLAssessmentTable() {
   };
 
   const handleSaveForLater = async () => {
-    await HandleSubmitComplete();
+    await HandleSubmitLater();
   };
 
   const handleOpenDialog = () => {
@@ -582,14 +619,14 @@ export default function HITLAssessmentTable() {
             {/* CyRapid Buttons  */}
             <div className="mt-10 flex w-full justify-end items-center gap-4">
               <div className="flex gap-4">
-                {/* <Button
+                <Button
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={HandleSubmitLater}
                   variant="contained"
                   disabled={loading || tableLoading || completed}
                 >
                   Save For Later
-                </Button> */}
+                </Button>
                 <Button
                   sx={{ mb: 2, backgroundColor: "#004ab9" }}
                   onClick={HandleSubmitComplete}

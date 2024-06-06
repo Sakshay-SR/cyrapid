@@ -38,7 +38,9 @@ function HitlInventoryTable({ token }: tableProps) {
   return (
     <div>
       <div className="flex size-auto flex-col items-center justify-center gap-4 rounded-lg bg-white p-10 font-bold shadow-2xl">
-        <div className="mb-4 text-2xl">Your Assessments</div>
+        <div className="mb-4 text-2xl">
+          Your Cyber Risk and Compliance Assessments
+        </div>
         <Table>
           <TableHead>
             <TableRow>

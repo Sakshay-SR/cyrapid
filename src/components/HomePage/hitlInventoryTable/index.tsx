@@ -45,7 +45,7 @@ function HitlInventoryTable({ token }: tableProps) {
           <TableHead>
             <TableRow>
               <TableCell>SL. No.</TableCell>
-              <TableCell>Name</TableCell>
+              <TableCell>Assessment Name</TableCell>
               {/* <TableCell>Type of Assessment</TableCell> */}
               <TableCell>Status</TableCell>
               <TableCell>Link</TableCell>

@@ -45,7 +45,7 @@ function UserInventoryTable({ token }: tableProps) {
           {assessments && assessments.length > 0 && (
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
+                <TableCell>Assessment Name</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>
                   <span>
@@ -74,7 +74,7 @@ function UserInventoryTable({ token }: tableProps) {
                       style={{
                         backgroundColor:
                           assessment.status === "created"
-                            ? "#fbbf24"
+                            ? '#fbbf24'
                             : assessment.status === "pending"
                               ? "#f87171"
                               : "#34d399",

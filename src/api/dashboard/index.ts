@@ -1,30 +1,37 @@
-const base_url = "https://cy-meda.azurewebsites.net";
+// const base_url = "https://cy-meda.azurewebsites.net";
 // const base_url = "http://4.233.136.185:8500";
+const base_url = 'https://cyberrapidv2.azurewebsites.net'
 
-export async function getPostAssesReport(token: string) {
-  const res = await fetch(`${base_url}/dashboard/get_post_assesment_reports/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // Assuming you need to send a token
+export async function getPostAssesReport(domain: string, token: string) {
+  const res = await fetch(
+    `${base_url}/dashboard/get_post_assesment_reports/?domain=${domain}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+      body: JSON.stringify({}), // Assuming you might want to send an empty object
     },
-    body: JSON.stringify({}), // Assuming you might want to send an empty object
-  });
+  );
 
   const resbody = await res.json();
 
   return resbody; // Return the parsed JSON response
 }
 
-export async function getPreAssesReport(token: string) {
-  const res = await fetch(`${base_url}/dashboard/get_pre_assesment_reports/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`, // Assuming you need to send a token
+export async function getPreAssesReport(domain: string, token: string) {
+  const res = await fetch(
+    `${base_url}/dashboard/get_pre_assesment_reports/?domain=${domain}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Assuming you need to send a token
+      },
+      body: JSON.stringify({}),
     },
-    body: JSON.stringify({}),
-  });
+  );
   const resbody = await res.json();
 
   return resbody;
@@ -35,6 +42,7 @@ export async function createAssessment(
   token: string | null,
   projectName: string,
   projectDescription: string,
+  certification: string,
 ) {
   try {
     const clientId = localStorage.getItem("client_id") || "coforge";
@@ -47,7 +55,7 @@ export async function createAssessment(
       projectName,
     )}&details=${encodeURIComponent(
       projectDescription || "Details not provided",
-    )}`;
+    )}&control_framework=${encodeURIComponent(certification)}`;
 
     const response = await fetch(url, {
       method: "POST",
@@ -117,10 +125,11 @@ export async function updateAssessment(body: object, token: string) {
 export async function fetchUpdatedTableData(
   client: string,
   assesment_name: string,
+  domain: string,
   token: string,
 ) {
   const response = await fetch(
-    `${base_url}/dashboard/get_table?assessment_name=${assesment_name}&client_id=${client}`,
+    `${base_url}/dashboard/get_table?assessment_name=${assesment_name}&client_id=${client}?domain=${domain}`,
     {
       method: "GET",
       headers: {

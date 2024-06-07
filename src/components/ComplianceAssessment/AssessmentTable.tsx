@@ -11,7 +11,7 @@ import Paper from "@mui/material/Paper";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Background1 from "../../assets/background2.png";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import EditIcon from '@mui/icons-material/Edit';
+import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
@@ -113,8 +113,7 @@ export default function AssessmentTable() {
   const [status, setStatus] = React.useState<string>("pending");
   const [columns, setColumns] = React.useState<string[]>([]);
   const token = localStorage.getItem("token");
-  const [certification, setCertification] = React.useState("");
-  const [domain, setDomain] = React.useState("Organizational Controls");
+  const [domain, setDomain] = React.useState("Organizational Control");
   const { logout, user } = useAuth0();
   const [checked, setChecked] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -127,7 +126,7 @@ export default function AssessmentTable() {
   const [page, setPage] = React.useState(1);
   const [completed, setCompleted] = React.useState(false);
   const [pdfClicked, setPdfClicked] = React.useState(false);
-  
+
   const handleChangePage = (
     event: React.ChangeEvent<unknown>,
     newPage: number,
@@ -289,10 +288,6 @@ export default function AssessmentTable() {
     setOpenDialog(true);
   };
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setCertification(event.target.value);
-  };
-
   const HandleCyRapidButton = async () => {
     if (tableData && tableData.length) {
       setLoading(true);
@@ -302,17 +297,7 @@ export default function AssessmentTable() {
         setLoading(false);
       }, 10000);
       try {
-        const res = await getPostAssesReport(token);
-        const cols = Object.keys(res[0]);
-        const newCols = cols.filter((item) => {
-          if (
-            item !== "Domain" &&
-            item !== "Subdomain" &&
-            item !== "Policy or Process Document Name (PDF)"
-          ) {
-            return item;
-          }
-        });
+        const res = await getPostAssesReport(domain, token);
         const assessor = res.map(
           (item) => item["Assessor Comment (by CYRAPID AI)"],
         );
@@ -360,6 +345,15 @@ export default function AssessmentTable() {
     setTableData(updatedRows); // Set the new state
   };
 
+  const handleDomainChange = async (e) => {
+    const dom = e.target.value;
+    setTableLoading(true);
+    setChecked(false);
+    handleTableAPIs(status, dom);
+    setDomain(dom);
+    contentRef.current.scrollIntoView({ behavior: "smooth" });
+  };
+
   const transformApiResponse = (data: TableData) => {
     if (data) {
       const cols = Object.keys(data);
@@ -377,7 +371,7 @@ export default function AssessmentTable() {
   };
 
   const renderCell = (value: string, column: string, index: number) => {
-    console.log(column)
+    console.log(column);
     const actualRowIndex = index + (page - 1) * rowsPerPage;
     const val = tableData[actualRowIndex][column] ?? "";
     console.log(tableData[actualRowIndex], "piyu");
@@ -386,10 +380,6 @@ export default function AssessmentTable() {
       no: "Non-compliant",
       partially: "Partially Compliant",
     };
-    if(column.toLowerCase() === "findings" || column.toLowerCase().includes("recommendations for compliance") ){
-      return (<EditableTextBox value={val} onChange={(e) => handleDataChange(index, column, e.target.value)} />)
-     
-    }
     if (column.toLowerCase().includes("compliance category")) {
       return compliance[value];
       // } else if (column.toLowerCase().includes("findings category")) {
@@ -433,7 +423,7 @@ export default function AssessmentTable() {
       }
       return (
         <StreamingTextInput
-          placeholder="Click CYRAPID AI Button to get comments"
+          placeholder={checked ? "" : "Click CYRAPID AI Button to get comments"}
           speed={25}
           width="400px"
           targetText={checked && !loading ? (val !== null ? val : "") : ""}
@@ -466,6 +456,61 @@ export default function AssessmentTable() {
     return val;
   };
 
+  const handleTableAPIs = async (stat: string, dom: string) => {
+    console.log(stat, dom);
+    const client_id = "coforge";
+    if (stat === "created") {
+      const res = await fetchUpdatedTableData(
+        client_id,
+        assessment_name,
+        dom,
+        token,
+      );
+      const final = res.result[0]?.["cyber_risk_table"];
+      const cols = Object.keys(final);
+      const newCols = cols.filter((item) => {
+        if (
+          item !== "Domain" &&
+          item !== "Subdomain" &&
+          item !== "Policy or Process Document Name (PDF)"
+        ) {
+          return item;
+        }
+      });
+      setColumns(newCols);
+      setTableData(transformApiResponse(final));
+      setTableLoading(false);
+      contentRef &&
+        contentRef.current &&
+        contentRef.current.scrollIntoView({ behavior: "smooth" });
+
+      if (stat === "completed" || stat === "finished") {
+        setChecked(true);
+        setCompleted(true);
+      }
+    } else {
+      const res = await getPreAssesReport(dom, token);
+      const cols = Object.keys(res[0]);
+      const newCols = cols.filter((item) => {
+        if (
+          item !== "Domain" &&
+          item !== "Subdomain" &&
+          item !== "Policy or Process Document Name (PDF)"
+        ) {
+          return item;
+        }
+      });
+      setColumns(newCols);
+      setTableData(res);
+      setTableLoading(false);
+      contentRef &&
+        contentRef.current &&
+        contentRef.current.scrollIntoView({ behavior: "smooth" });
+
+      console.log("Status is pending. Perform normal operations.");
+    }
+  };
+
   React.useEffect(() => {
     const initializeData = async () => {
       setTableLoading(true);
@@ -477,61 +522,23 @@ export default function AssessmentTable() {
           token,
         );
         const stat = result?.result[0].status;
+        await handleTableAPIs(stat, domain);
         setStatus(stat);
-        if (stat !== "created") {
-          const res = await fetchUpdatedTableData(
-            client_id,
-            assessment_name,
-            token,
-          );
-          const final = res.result[0]?.["cyber_risk_table"];
-          const cols = Object.keys(final);
-          const newCols = cols.filter((item) => {
-            if (
-              item !== "Domain" &&
-              item !== "Subdomain" &&
-              item !== "Policy or Process Document Name (PDF)"
-            ) {
-              return item;
-            }
-          });
-          setColumns(newCols);
-          setTableData(transformApiResponse(final));
-          setTableLoading(false);
-          contentRef && contentRef.current && contentRef.current.scrollIntoView({ behavior: 'smooth' }) 
-
-          if (stat === "completed" || stat === "finished") {
-            setChecked(true);
-            setCompleted(true);
-            setCertification("ISO 27001");
-          }
-        } else {
-          const res = await getPreAssesReport(token);
-          const cols = Object.keys(res[0]);
-          const newCols = cols.filter((item) => {
-            if (
-              item !== "Domain" &&
-              item !== "Subdomain" &&
-              item !== "Policy or Process Document Name (PDF)"
-            ) {
-              return item;
-            }
-          });
-          setColumns(newCols);
-          setTableData(res);
-          setTableLoading(false);
-          contentRef && contentRef.current && contentRef.current.scrollIntoView({ behavior: 'smooth' }) 
-
-          console.log("Status is pending. Perform normal operations.");
-        }
       } catch (error: any) {
         console.log(error);
       }
     };
     initializeData();
-    contentRef && contentRef.current && contentRef.current.scrollIntoView({ behavior: 'smooth' }) 
+    contentRef &&
+      contentRef.current &&
+      contentRef.current.scrollIntoView({ behavior: "smooth" });
   }, []);
-  React.useEffect(() => { contentRef && contentRef.current && contentRef.current.scrollIntoView({ behavior: 'smooth' }) }, [contentRef])
+
+  React.useEffect(() => {
+    contentRef &&
+      contentRef.current &&
+      contentRef.current.scrollIntoView({ behavior: "smooth" });
+  }, [contentRef]);
   // React.useEffect(() => {
   //   const initializeData = async () => {
   //     setTableLoading(true);
@@ -622,7 +629,7 @@ export default function AssessmentTable() {
             <div title="Back">
               <ArrowBackIosIcon
                 onClick={() => {
-                  if (certification === "ISO 27001" && !completed) {
+                  if (!completed) {
                     handleOpenDialog();
                   } else {
                     navigate("/");
@@ -651,31 +658,6 @@ export default function AssessmentTable() {
       </div>
 
       <div className="mt-28 flex w-[90%] flex-col items-start justify-center  rounded-xl bg-white px-4 py-6">
-        <div className="flex w-full flex-col items-start justify-center gap-4">
-          <Box>Control Framework :</Box>
-          <FormControl fullWidth>
-            <InputLabel id="label1">Choose your Option</InputLabel>
-            <Select
-              labelId="label1"
-              id="demo-simple-select-standard"
-              label={"Control Framework"}
-              value={certification}
-              onChange={handleChange}
-              disabled={completed || tableLoading}
-            >
-              <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
-              <MenuItem value={"NIS2"} disabled>
-                NIS2
-              </MenuItem>
-              <MenuItem value={"CCPA"} disabled>
-                CCPA
-              </MenuItem>
-              <MenuItem value={"GDPR"} disabled>
-                GDPR
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </div>
         <Dialog
           open={openDialog}
           onClose={handleCloseDialog}
@@ -695,198 +677,185 @@ export default function AssessmentTable() {
             </Button>
           </DialogActions>
         </Dialog>
-        {certification === "ISO 27001" && (
-          <>
-            <div className="flex w-full flex-col items-start justify-center gap-4 rounded-xl bg-white py-6">
-              <Box>Domain :</Box>
-              <FormControl fullWidth>
-                <InputLabel id="label1">Choose your Domain</InputLabel>
-                <Select
-                  labelId="label1"
-                  id="demo-simple-select-standard"
-                  label="Organizational Controls"
-                  defaultValue={"Organizational Controls"}
-                  value={domain}
-                  disabled={completed}
-                  onChange={(e) => {
-                    setDomain(e.target.value);
-                    contentRef.current.scrollIntoView({ behavior: 'smooth' })
-                  }}
-                >
-                  <MenuItem value={"Organizational Controls"}>
-                    Organizational Controls
-                  </MenuItem>
-                  <MenuItem value={"People Controls"}>People Controls</MenuItem>
-                  <MenuItem value={"Physical Controls"}>
-                    Physical Controls
-                  </MenuItem>
-                  <MenuItem value={"Technological controls"}>
-                    Technological controls
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </div>
-            {/* CyRapid Buttons  */}
-            <div className="mt-10 flex w-full justify-between items-center gap-4">
-              <div className="mb-4">
-                {status === "completed"
-                  ? "Assessment under review by Human Assessor"
-                  : null}
-              </div>
-              <div className="flex gap-4">
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={HandleSubmitLater}
-                  variant="contained"
-                  disabled={loading || tableLoading || completed}
-                >
-                  Save For Later
-                </Button>
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={HandleSubmitComplete}
-                  variant="contained"
-                  disabled={loading || tableLoading || completed}
-                >
-                  Save & Complete
-                </Button>
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={() => setPdfClicked(!pdfClicked)}
-                  variant="contained"
-                  disabled={(!checked || loading || tableLoading) && !completed}
-                >
-                  <DownloadIcon />
-                  Save as Pdf
-                </Button>
-              </div>
-            </div>
-            {pdfClicked && (
-              <div className="flex w-full justify-end items-center gap-4">
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={handlePrint}
-                  variant="contained"
-                >
-                  <DownloadIcon />
-                  Save Assessment Worksheet
-                </Button>
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={handlePrint}
-                  variant="contained"
-                  disabled
-                >
-                  <DownloadIcon />
-                  Save Assessment Report
-                </Button>
-              </div>
-            )}
+        <div className="flex w-full flex-col items-start justify-center gap-4 rounded-xl bg-white">
+          <Box>Domain :</Box>
+          <FormControl fullWidth>
+            <InputLabel id="label1">Choose your Domain</InputLabel>
+            <Select
+              labelId="label1"
+              id="demo-simple-select-standard"
+              label="Organizational Controls"
+              defaultValue={"Organizational Controls"}
+              value={domain}
+              disabled={completed}
+              onChange={(e) => handleDomainChange(e)}
+            >
+              <MenuItem value={"Organizational Control"}>
+                Organizational Controls
+              </MenuItem>
+              <MenuItem value={"People Control"}>People Controls</MenuItem>
+              <MenuItem value={"Physical Control"}>Physical Controls</MenuItem>
+              <MenuItem value={"Technological Control"}>
+                Technological Controls
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+        {/* CyRapid Buttons  */}
+        <div className="mt-10 flex w-full justify-between items-center gap-4">
+          <div className="mb-4">
+            {status === "completed"
+              ? "Assessment under review by Human Assessor"
+              : null}
+          </div>
+          <div className="flex gap-4">
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={HandleSubmitLater}
+              variant="contained"
+              disabled={loading || tableLoading || completed}
+            >
+              Save For Later
+            </Button>
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={HandleSubmitComplete}
+              variant="contained"
+              disabled={loading || tableLoading || completed}
+            >
+              Save & Complete
+            </Button>
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={() => setPdfClicked(!pdfClicked)}
+              variant="contained"
+              disabled={(!checked || loading || tableLoading) && !completed}
+            >
+              <DownloadIcon />
+              Save as Pdf
+            </Button>
+          </div>
+        </div>
+        {pdfClicked && (
+          <div className="flex w-full justify-end items-center gap-4">
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={handlePrint}
+              variant="contained"
+            >
+              <DownloadIcon />
+              Save Assessment Worksheet
+            </Button>
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={handlePrint}
+              variant="contained"
+              disabled
+            >
+              <DownloadIcon />
+              Save Assessment Report
+            </Button>
+          </div>
+        )}
 
-            <div className=" flex w-full items-center justify-between rounded-t-md bg-[#004ab9] p-4">
-              <div className="  text-xl font-bold text-white">
-                Cyber Risk Assessment Form
-              </div>
-              <Button
-                sx={{
-                  backgroundColor: "#fff",
-                  py: 2,
-                  color: "#004ab9",
-                  fontWeight: "bold",
-                  ":hover": {
-                    backgroundColor: "white",
-                  },
-                  "&:disabled": {
-                    color: "gray", // Change text color to white when disabled
-                  },
-                }}
-                onClick={HandleCyRapidButton}
-                variant="contained"
-                disabled={tableLoading || completed}
-              >
-                <AutoAwesomeIcon className="mr-2" /> Use CyRapid AI
-              </Button>
-            </div>
-            {!tableLoading ? (
-              <Paper sx={{ width: "100%", overflow: "auto" }}>
-                <TableContainer
-                  component={Paper}
-                  ref={contentRef}
-
+        <div className=" flex w-full items-center justify-between rounded-t-md bg-[#004ab9] p-4">
+          <div className="  text-xl font-bold text-white">
+            Cyber Risk Assessment Form
+          </div>
+          <Button
+            sx={{
+              backgroundColor: "#fff",
+              py: 2,
+              color: "#004ab9",
+              fontWeight: "bold",
+              ":hover": {
+                backgroundColor: "white",
+              },
+              "&:disabled": {
+                color: "gray", // Change text color to white when disabled
+              },
+            }}
+            onClick={HandleCyRapidButton}
+            variant="contained"
+            disabled={tableLoading || completed}
+          >
+            <AutoAwesomeIcon className="mr-2" /> Use CyRapid AI
+          </Button>
+        </div>
+        {!tableLoading ? (
+          <Paper sx={{ width: "100%", overflow: "auto" }}>
+            <TableContainer
+              component={Paper}
+              ref={contentRef}
+              sx={{
+                borderRadius: "0",
+                position: "relative",
+                maxHeight: "calc(100vh - 100px)",
+              }}
+            >
+              <Table>
+                <TableHead
                   sx={{
+                    backgroundColor: "#333",
+                    color: "#fff",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1,
                     borderRadius: "0",
-                    position: "relative",
-                    maxHeight: "calc(100vh - 100px)"
+                    overflowX: "auto",
                   }}
                 >
-                  <Table >
-
-                    <TableHead
-                      sx={{
-                        backgroundColor: "#333",
-                        color: "#fff",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 1,
-                        borderRadius: "0",
-                        overflowX: 'auto'
-                      }}
-                    >
-                      <TableRow
-                        sx={{
-                          whiteSpace: "nowrap",
-                          fontSize: "20px",
-                          fontWeight: "600",
-                          padding: "1.5rem",
-                          borderRadius: "0",
-                          overflowX: 'auto'
-                        }}
-                      >
+                  <TableRow
+                    sx={{
+                      whiteSpace: "nowrap",
+                      fontSize: "20px",
+                      fontWeight: "600",
+                      padding: "1.5rem",
+                      borderRadius: "0",
+                      overflowX: "auto",
+                    }}
+                  >
+                    {columns.map((column, colIndex) => (
+                      <TableColumnHeaders key={column} index={colIndex}>
+                        {column}
+                      </TableColumnHeaders>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tableData
+                    .slice((page - 1) * rowsPerPage, page * rowsPerPage)
+                    .map((row, index) => (
+                      <TableRow key={index}>
                         {columns.map((column, colIndex) => (
-                          <TableColumnHeaders key={column} index={colIndex}>
-                            {column}
-                          </TableColumnHeaders>
+                          <StyledTableCell
+                            key={`${index}-${column}`}
+                            index={colIndex}
+                          >
+                            {renderCell(row[column], column, index)}
+                          </StyledTableCell>
                         ))}
                       </TableRow>
-                    </TableHead>
-                    <TableBody >
-
-                      {tableData
-                        .slice((page - 1) * rowsPerPage, page * rowsPerPage)
-                        .map((row, index) => (
-                          <TableRow key={index}>
-                            {columns.map((column, colIndex) => (
-                              <StyledTableCell
-                                key={`${index}-${column}`}
-                                index={colIndex}
-                              >
-                                {renderCell(row[column], column, index)}
-                              </StyledTableCell>
-                            ))}
-                          </TableRow>
-                        ))}
-                    </TableBody>
-
-                  </Table>
-                </TableContainer>
-                <Pagination
-                  count={Math.ceil(tableData.length / rowsPerPage)}
-                  page={page}
-                  onChange={handleChangePage}
-                  color="primary"
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center", // Centers the pagination in its container
-                    my: 2, // Adds margin top for spacing
-                  }}
-                />
-              </Paper>
-            ) : (
-              <div className="mt-10 flex h-20 w-[90%] flex-col items-center justify-center">
-                <PulseLoader color="#36d7b7" loading />
-              </div>
-            )}
-          </>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Pagination
+              count={Math.ceil(tableData.length / rowsPerPage)}
+              page={page}
+              onChange={handleChangePage}
+              color="primary"
+              sx={{
+                display: "flex",
+                justifyContent: "center", // Centers the pagination in its container
+                my: 2, // Adds margin top for spacing
+              }}
+            />
+          </Paper>
+        ) : (
+          <div className="mt-10 flex h-20 w-[90%] flex-col items-center justify-center">
+            <PulseLoader color="#36d7b7" loading />
+          </div>
         )}
       </div>
     </div>

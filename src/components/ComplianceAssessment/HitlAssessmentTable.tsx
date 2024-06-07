@@ -47,6 +47,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
+import EditableTextBox from "components/Common/EditableTextBox";
 import autoTable from "jspdf-autotable";
 
 type TableData = {
@@ -92,7 +93,6 @@ export default function HITLAssessmentTable() {
   const [tableData, setTableData] = React.useState<TableRowData[]>([]);
   const [columns, setColumns] = React.useState<string[]>([]);
   const token = localStorage.getItem("token");
-  const [certification, setCertification] = React.useState("");
   const [domain, setDomain] = React.useState("Organizational Controls");
   const { logout, user } = useAuth0();
   const [checked, setChecked] = React.useState(false);
@@ -127,7 +127,10 @@ export default function HITLAssessmentTable() {
     const endIndex = startIndex + rowsPerPage;
 
     for (let i = startIndex; i < endIndex; i++) {
-      if (!tableData[i]?.["Updated Comments (If Any) by human Assessor"] || !tableData[i]?.["Findings Category"]) {
+      if (
+        !tableData[i]?.["Updated Comments (If Any) by human Assessor"] ||
+        !tableData[i]?.["Findings Category"]
+      ) {
         return false;
       }
     }
@@ -136,7 +139,10 @@ export default function HITLAssessmentTable() {
 
   const areAllTextFieldsFilled = () => {
     for (let i = 0; i < tableData.length; i++) {
-      if (!tableData[i]?.["Updated Comments (If Any) by human Assessor"] || !tableData[i]?.["Findings Category"]) {
+      if (
+        !tableData[i]?.["Updated Comments (If Any) by human Assessor"] ||
+        !tableData[i]?.["Findings Category"]
+      ) {
         return false;
       }
     }
@@ -164,41 +170,26 @@ export default function HITLAssessmentTable() {
 
     return apiData;
   };
+
   const HandleSubmitLater = async () => {
-    if (token) {
-      setLoading(true);
-      const body = {
-        client_id: "coforge",
-        assessment_name: localStorage.getItem("assessment_name"),
-        cyber_risk_table: prepareDataForApi(tableData, columns),
-      };
-      try {
-        const saveContinueResponse = await getSaveContinue(body, token);
-        console.log("SaveContinue response:", saveContinueResponse);
-        toast.success("Data saved successfully!");
-
-        const updateAssessmentBody = {
-          status: "pending",
-          assessment_name: assessment_name,
-          client_id: "coforge",
-        };
-
-        const updateAssessmentResponse = await updateAssessment(
-          updateAssessmentBody,
-          token,
-        );
-        console.log("UpdateAssessment response:", updateAssessmentResponse);
-        toast.success("Assessment status updated to Pending.");
-
-        // Fetch updated table data
-        navigate("/");
-      } catch (error: any) {
-        setLoading(false);
-        console.error("Error during API calls:", error);
-        toast.error(`Error: ${error.message}`);
-      }
-    } else {
-      console.log("No token and data");
+    setLoading(true);
+    const body = {
+      client_id: "coforge",
+      assessment_name: assessmentName,
+      cyber_risk_table: prepareDataForApi(tableData, columns),
+    };
+    try {
+      const saveContinueResponse = await getHITLSaveContinue(
+        userId,
+        body,
+        token,
+      );
+      console.log("SaveContinue responsse:", saveContinueResponse);
+      toast.success("Data saved successfully!");
+    } catch (error) {
+      setLoading(false);
+      console.error("Error during API calls:", error);
+      toast.error(`Error: ${error.message}`);
     }
   };
 
@@ -301,10 +292,6 @@ export default function HITLAssessmentTable() {
     setOpenDialog(true);
   };
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setCertification(event.target.value);
-  };
-
   const handleDataChange = (
     displayedRowIndex: number,
     column: string,
@@ -361,6 +348,16 @@ export default function HITLAssessmentTable() {
     };
     if (column.toLowerCase().includes("compliance category")) {
       return compliance[value];
+    } else if (
+      column.toLowerCase() === "findings" ||
+      column.toLowerCase().includes("recommendations for compliance")
+    ) {
+      return (
+        <EditableTextBox
+          value={val}
+          onChange={(e) => handleDataChange(index, column, e.target.value)}
+        />
+      );
     } else if (column.toLowerCase().includes("findings category")) {
       return (
         <FormControl fullWidth>
@@ -370,7 +367,9 @@ export default function HITLAssessmentTable() {
             displayEmpty
             placeholder="Findings Category"
           >
-            <MenuItem value="" disabled hidden>None</MenuItem>
+            <MenuItem value="" disabled hidden>
+              None
+            </MenuItem>
             <MenuItem value="Critical">Critical</MenuItem>
             <MenuItem value="High">High</MenuItem>
             <MenuItem value="Medium">Medium</MenuItem>
@@ -482,7 +481,6 @@ export default function HITLAssessmentTable() {
       setTableData(transformApiResponse(finalTable));
       setTableLoading(false);
       setChecked(true);
-      setCertification("ISO 27001");
       if (status === "finished") setCompleted(true);
       console.log("API Response finished");
     };
@@ -516,7 +514,7 @@ export default function HITLAssessmentTable() {
             <div title="Back">
               <ArrowBackIosIcon
                 onClick={() => {
-                  if (certification === "ISO 27001" && !completed) {
+                  if (!completed) {
                     handleOpenDialog();
                   } else {
                     navigate("/");
@@ -545,31 +543,6 @@ export default function HITLAssessmentTable() {
       </div>
 
       <div className="mt-28 flex w-[90%] flex-col items-start justify-center  rounded-xl bg-white px-4 py-6">
-        <div className="flex w-full flex-col items-start justify-center gap-4">
-          <Box>Control Framework :</Box>
-          <FormControl fullWidth>
-            <InputLabel id="label1">Choose your Option</InputLabel>
-            <Select
-              labelId="label1"
-              id="demo-simple-select-standard"
-              label={"Control Framework"}
-              value={certification}
-              onChange={handleChange}
-              disabled
-            >
-              <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
-              <MenuItem value={"NIS2"} disabled>
-                NIS2
-              </MenuItem>
-              <MenuItem value={"CCPA"} disabled>
-                CCPA
-              </MenuItem>
-              <MenuItem value={"GDPR"} disabled>
-                GDPR
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </div>
         <Dialog
           open={openDialog}
           onClose={handleCloseDialog}
@@ -585,168 +558,162 @@ export default function HITLAssessmentTable() {
           <DialogActions>
             <Button onClick={handleCloseDialog}>Ignore</Button>
             <Button onClick={handleSaveForLater} autoFocus>
-              Save & Complete
+              Save for later
             </Button>
           </DialogActions>
         </Dialog>
-        {certification === "ISO 27001" && (
-          <>
-            <div className="flex w-full flex-col items-start justify-center gap-4 rounded-xl bg-white py-6">
-              <Box>Domain :</Box>
-              <FormControl fullWidth>
-                <InputLabel id="label1">Choose your Domain</InputLabel>
-                <Select
-                  labelId="label1"
-                  id="demo-simple-select-standard"
-                  label="Organizational Controls"
-                  defaultValue={"Organizational Controls"}
-                  value={domain}
-                  disabled
-                >
-                  <MenuItem value={"Organizational Controls"}>
-                    Organizational Controls
-                  </MenuItem>
-                  <MenuItem value={"People Controls"}>People Controls</MenuItem>
-                  <MenuItem value={"Physical Controls"}>
-                    Physical Controls
-                  </MenuItem>
-                  <MenuItem value={"Technological controls"}>
-                    Technological controls
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </div>
-            {/* CyRapid Buttons  */}
-            <div className="mt-10 flex w-full justify-end items-center gap-4">
-              <div className="flex gap-4">
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={HandleSubmitLater}
-                  variant="contained"
-                  disabled={loading || tableLoading || completed}
-                >
-                  Save For Later
-                </Button>
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={HandleSubmitComplete}
-                  variant="contained"
-                  disabled={loading || tableLoading || completed}
-                >
-                  Save & Complete
-                </Button>
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={() => setPdfClicked(!pdfClicked)}
-                  variant="contained"
-                  disabled={(!checked || loading || tableLoading) && !completed}
-                >
-                  <DownloadIcon />
-                  Save as Pdf
-                </Button>
-              </div>
-            </div>
-            {pdfClicked && (
-              <div className="flex w-full justify-end items-center gap-4">
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={handlePrint}
-                  variant="contained"
-                >
-                  <DownloadIcon />
-                  Save Assessment Worksheet
-                </Button>
-                <Button
-                  sx={{ mb: 2, backgroundColor: "#004ab9" }}
-                  onClick={handlePrint}
-                  variant="contained"
-                  disabled
-                >
-                  <DownloadIcon />
-                  Save Assessment Report
-                </Button>
-              </div>
-            )}
+        <div className="flex w-full flex-col items-start justify-center gap-4 rounded-xl bg-white py-6">
+          <Box>Domain :</Box>
+          <FormControl fullWidth>
+            <InputLabel id="label1">Choose your Domain</InputLabel>
+            <Select
+              labelId="label1"
+              id="demo-simple-select-standard"
+              label="Organizational Controls"
+              defaultValue={"Organizational Controls"}
+              value={domain}
+              disabled
+            >
+              <MenuItem value={"Organizational Controls"}>
+                Organizational Controls
+              </MenuItem>
+              <MenuItem value={"People Controls"}>People Controls</MenuItem>
+              <MenuItem value={"Physical Controls"}>Physical Controls</MenuItem>
+              <MenuItem value={"Technological controls"}>
+                Technological controls
+              </MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+        {/* CyRapid Buttons  */}
+        <div className="mt-10 flex w-full justify-end items-center gap-4">
+          <div className="flex gap-4">
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={HandleSubmitLater}
+              variant="contained"
+              disabled={loading || tableLoading || completed}
+            >
+              Save For Later
+            </Button>
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={HandleSubmitComplete}
+              variant="contained"
+              disabled={loading || tableLoading || completed}
+            >
+              Save & Complete
+            </Button>
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={() => setPdfClicked(!pdfClicked)}
+              variant="contained"
+              disabled={(!checked || loading || tableLoading) && !completed}
+            >
+              <DownloadIcon />
+              Save as Pdf
+            </Button>
+          </div>
+        </div>
+        {pdfClicked && (
+          <div className="flex w-full justify-end items-center gap-4">
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={handlePrint}
+              variant="contained"
+            >
+              <DownloadIcon />
+              Save Assessment Worksheet
+            </Button>
+            <Button
+              sx={{ mb: 2, backgroundColor: "#004ab9" }}
+              onClick={handlePrint}
+              variant="contained"
+              disabled
+            >
+              <DownloadIcon />
+              Save Assessment Report
+            </Button>
+          </div>
+        )}
 
-            <div className=" flex w-full items-center justify-between rounded-t-md bg-[#004ab9] p-4">
-              <div className="  text-xl font-bold text-white">
-                Cyber Risk Assessment Form
-              </div>
-            </div>
-            {!tableLoading ? (
-              <Paper sx={{ width: "100%", overflow: "hidden" }}>
-                <TableContainer
-                  component={Paper}
-                  ref={contentRef}
+        <div className=" flex w-full items-center justify-between rounded-t-md bg-[#004ab9] p-4">
+          <div className="  text-xl font-bold text-white">
+            Cyber Risk Assessment Form
+          </div>
+        </div>
+        {!tableLoading ? (
+          <Paper sx={{ width: "100%", overflow: "hidden" }}>
+            <TableContainer
+              component={Paper}
+              ref={contentRef}
+              sx={{
+                borderRadius: "0",
+                position: "relative",
+                maxHeight: "calc(100vh - 100px)",
+              }}
+            >
+              <Table>
+                <TableHead
                   sx={{
-                    borderRadius: "0",
-                    position: "relative",
-                    maxHeight: "calc(100vh - 100px)",
+                    backgroundColor: "#333",
+                    color: "#fff",
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 1,
                   }}
                 >
-                  <Table>
-                    <TableHead
-                      sx={{
-                        backgroundColor: "#333",
-                        color: "#fff",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 1,
-                      }}
-                    >
-                      <TableRow
-                        sx={{
-                          whiteSpace: "nowrap",
-                          fontSize: "20px",
-                          fontWeight: "600",
-                          padding: "1.5rem",
-                          borderRadius: "0",
-                        }}
-                      >
+                  <TableRow
+                    sx={{
+                      whiteSpace: "nowrap",
+                      fontSize: "20px",
+                      fontWeight: "600",
+                      padding: "1.5rem",
+                      borderRadius: "0",
+                    }}
+                  >
+                    {columns.map((column, colIndex) => (
+                      <TableColumnHeaders key={column} index={colIndex}>
+                        {column}
+                      </TableColumnHeaders>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody sx={{ overflowY: "auto" }}>
+                  {tableData
+                    .slice((page - 1) * rowsPerPage, page * rowsPerPage)
+                    .map((row, index) => (
+                      <TableRow key={index}>
                         {columns.map((column, colIndex) => (
-                          <TableColumnHeaders key={column} index={colIndex}>
-                            {column}
-                          </TableColumnHeaders>
+                          <StyledTableCell
+                            sx={{}}
+                            key={`${index}-${column}`}
+                            index={colIndex}
+                          >
+                            {renderCell(row[column], column, index)}
+                          </StyledTableCell>
                         ))}
                       </TableRow>
-                    </TableHead>
-                    <TableBody sx={{ overflowY: "auto" }}>
-                      {tableData
-                        .slice((page - 1) * rowsPerPage, page * rowsPerPage)
-                        .map((row, index) => (
-                          <TableRow key={index}>
-                            {columns.map((column, colIndex) => (
-                              <StyledTableCell
-                                sx={{}}
-                                key={`${index}-${column}`}
-                                index={colIndex}
-                              >
-                                {renderCell(row[column], column, index)}
-                              </StyledTableCell>
-                            ))}
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <Pagination
-                  count={Math.ceil(tableData.length / rowsPerPage)}
-                  page={page}
-                  onChange={handleChangePage}
-                  color="primary"
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center", // Centers the pagination in its container
-                    my: 2, // Adds margin top for spacing
-                  }}
-                />
-              </Paper>
-            ) : (
-              <div className="mt-10 flex h-20 w-[90%] flex-col items-center justify-center">
-                <PulseLoader color="#36d7b7" loading />
-              </div>
-            )}
-          </>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <Pagination
+              count={Math.ceil(tableData.length / rowsPerPage)}
+              page={page}
+              onChange={handleChangePage}
+              color="primary"
+              sx={{
+                display: "flex",
+                justifyContent: "center", // Centers the pagination in its container
+                my: 2, // Adds margin top for spacing
+              }}
+            />
+          </Paper>
+        ) : (
+          <div className="mt-10 flex h-20 w-[90%] flex-col items-center justify-center">
+            <PulseLoader color="#36d7b7" loading />
+          </div>
         )}
       </div>
     </div>

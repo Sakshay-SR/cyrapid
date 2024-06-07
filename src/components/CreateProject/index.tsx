@@ -1,80 +1,74 @@
-import React, { useState } from 'react';
-import DotLoader from 'react-spinners/DotLoader';
-import { useNavigate } from 'react-router-dom';
-import { createAssessment } from 'api/dashboard';
-import { useAuth0 } from '@auth0/auth0-react';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import React, { useState } from "react";
+import DotLoader from "react-spinners/DotLoader";
+import { useNavigate } from "react-router-dom";
+import { createAssessment } from "api/dashboard";
+import { useAuth0 } from "@auth0/auth0-react";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import LogoutIcon from "@mui/icons-material/Logout";
-import Background1 from "../../assets/background2.png"
+import Background1 from "../../assets/background2.png";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { FormControl, Select, InputLabel, MenuItem, Box } from "@mui/material";
 
 export default function CreateProject() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const [policyFiles, setPolicyFiles] = useState<File[]>([]);
   const [responseFile, setResponseFile] = useState<File | undefined>();
   const [showTable, setShowTable] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [projectName, setProjectName] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
+  const [projectName, setProjectName] = useState("");
+  const [certification, setCertification] = React.useState("");
+  const [projectDescription, setProjectDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const {logout} = useAuth0()
+  const { logout } = useAuth0();
+
   const handlePolicyFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setPolicyFiles((prev) => [...prev, ...files]);
-    setErrorMessage('');
+    setErrorMessage("");
   };
 
   const handleResponseFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setResponseFile(e.target.files[0]);
     }
-    setErrorMessage('');
+    setErrorMessage("");
   };
 
   const handleUpload = () => {
-    if (!policyFiles.length || !responseFile) return;
-    setShowTable(true); // Toggle table display on submit
-    setErrorMessage('');
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage('');
-    setIsLoading(true);
-
-    if (projectName.trim() === '') {
-      setErrorMessage('Project name is required.');
+    if (projectName.trim() === "") {
+      toast.error(`Project name is required.`);
       return;
     }
 
     // Check if files are uploaded
     if (policyFiles.length === 0 || !responseFile) {
-      setErrorMessage('All files must be uploaded.');
+      toast.error(`All files must be uploaded.`);
       return;
     }
 
-    const formData = new FormData();
-    // formData.append(
-    //   'client_id',
-    //   localStorage.getItem('client_id') || 'coforge',
-    // );
-    // formData.append(
-    //   'user_id',
-    //   localStorage.getItem('user_id') || 'admin@sigmared.ai',
-    // );
-    // formData.append('assesment_name', encodeURIComponent(projectName));
-    // formData.append(
-    //   'details',
-    //   encodeURIComponent(projectDescription || 'Details not provided'),
-    // );
+    if (certification === "") {
+      toast.error(`Please select the certification.`);
+      return;
+    }
+    setShowTable(true); // Toggle table display on submit
+    setErrorMessage("");
+  };
 
-    // Append policy documents
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setIsLoading(true);
+
+    const formData = new FormData();
     policyFiles.forEach((file) => {
-      formData.append('policy_documents', file, file.name);
+      formData.append("policy_documents", file, file.name);
     });
 
     // Append response document
-    formData.append('response_document', responseFile, responseFile.name);
+    formData.append("response_document", responseFile, responseFile.name);
 
     try {
       const res = await createAssessment(
@@ -82,12 +76,13 @@ export default function CreateProject() {
         token,
         projectName,
         projectDescription,
+        certification,
       );
       console.log(res);
-      navigate('/'); // Navigate on successful submission
+      navigate("/"); // Navigate on successful submission
     } catch (error) {
-      console.error('Failed to create assessment:', error);
-      setErrorMessage('Failed to submit the assessment. Please try again.');
+      console.error("Failed to create assessment:", error);
+      setErrorMessage("Failed to submit the assessment. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -96,9 +91,9 @@ export default function CreateProject() {
   const handleUpdateFile = (index: number) => {
     // Implement a function to handle updating individual files
     // This could involve triggering a hidden file input or other UI behavior
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'application/pdf';
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = "application/pdf";
     fileInput.onchange = (e) => {
       const input = e.target as HTMLInputElement;
       if (input.files && input.files.length > 0) {
@@ -109,15 +104,15 @@ export default function CreateProject() {
       }
     };
     fileInput.click();
-    setErrorMessage('');
+    setErrorMessage("");
   };
 
   const handleResponseUpdateFile = () => {
     // Implement a function to handle updating individual files
     // This could involve triggering a hidden file input or other UI behavior
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.csv';
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".csv";
     fileInput.onchange = (e) => {
       const input = e.target as HTMLInputElement;
       if (input.files && input.files.length > 0) {
@@ -126,32 +121,49 @@ export default function CreateProject() {
       }
     };
     fileInput.click();
-    setErrorMessage('');
+    setErrorMessage("");
   };
 
   const handleRemoveFile = (index: number) => {
     if (policyFiles.length > 1) {
       setPolicyFiles((prev) => prev.filter((_, i) => i !== index));
     } else {
-      setErrorMessage('At least one file is required.');
+      setErrorMessage("At least one file is required.");
     }
   };
 
   return (
-    <div className="flex size-full items-center justify-center" style={{backgroundImage:`url(${Background1})`,backgroundRepeat:"no-repeat",backgroundSize:"cover"}}>
+    <div
+      className="flex size-full items-center justify-center"
+      style={{
+        backgroundImage: `url(${Background1})`,
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+      }}
+    >
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       {/* HEADER */}
       <div className="mb-10 absolute top-0 flex w-full items-center  justify-center bg-white">
         <div className="flex w-[90%] items-center justify-between">
-          <div
-            className=" cursor-pointer rounded-2xl  py-6 text-xl font-semibold flex items-center gap-2"
-
-
-          >
-            <div title="Back"><ArrowBackIosIcon onClick={() => {
-              navigate("/");
-            }} /></div>
-
-Setup Assessment
+          <div className=" cursor-pointer rounded-2xl  py-6 text-xl font-semibold flex items-center gap-2">
+            <div title="Back">
+              <ArrowBackIosIcon
+                onClick={() => {
+                  navigate("/");
+                }}
+              />
+            </div>
+            Setup Assessment
           </div>
           <button
             title="logout"
@@ -167,7 +179,6 @@ Setup Assessment
       <div className="w-full max-w-3xl mt-28 mb-10 shadow-2xl rounded-lg bg-white p-8 shadow-md">
         {!showTable ? (
           <div className="w-full">
-           
             <div className="mb-5">
               <h3 className="text-lg font-semibold text-gray-700">
                 Assessment Name
@@ -192,6 +203,34 @@ Setup Assessment
                 className="w-full border-2 p-2 rounded-lg"
                 rows={2}
               />
+            </div>
+            <div className="flex w-full flex-col items-start justify-center">
+              <Box>
+                <h3 className="text-lg font-semibold text-gray-700">
+                  Control Framework
+                </h3>
+              </Box>
+              <FormControl fullWidth>
+                <InputLabel id="label1">Choose your Option</InputLabel>
+                <Select
+                  labelId="label1"
+                  id="demo-simple-select-standard"
+                  label={"Control Framework"}
+                  value={certification}
+                  onChange={(e) => setCertification(e.target.value)}
+                >
+                  <MenuItem value={"ISO 27001"}>ISO 27001</MenuItem>
+                  <MenuItem value={"NIS2"} disabled>
+                    NIS2
+                  </MenuItem>
+                  <MenuItem value={"CCPA"} disabled>
+                    CCPA
+                  </MenuItem>
+                  <MenuItem value={"GDPR"} disabled>
+                    GDPR
+                  </MenuItem>
+                </Select>
+              </FormControl>
             </div>
 
             <div className="my-5 grid grid-cols-2 gap-8">
@@ -359,7 +398,7 @@ Setup Assessment
               disabled={isLoading}
               className="mx-auto mt-6 flex w-full items-center justify-center rounded-lg bg-blue-500 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
             >
-              {isLoading ? <DotLoader color="#36d7b7" size={20} /> : 'Submit'}
+              {isLoading ? <DotLoader color="#36d7b7" size={20} /> : "Submit"}
             </button>
           </div>
         )}

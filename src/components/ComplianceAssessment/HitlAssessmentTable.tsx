@@ -90,10 +90,11 @@ const StyledTableCell = styled(TableCell)(({ index }) => ({
 }));
 
 export default function HITLAssessmentTable() {
+  const client = "cyberrapid";
   const [tableData, setTableData] = React.useState<TableRowData[]>([]);
   const [columns, setColumns] = React.useState<string[]>([]);
   const token = localStorage.getItem("token");
-  const [domain, setDomain] = React.useState("Organizational Controls");
+  const [domain, setDomain] = React.useState("Organizational Control");
   const { logout, user } = useAuth0();
   const [checked, setChecked] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -174,22 +175,22 @@ export default function HITLAssessmentTable() {
   const HandleSubmitLater = async () => {
     setLoading(true);
     const body = {
-      client_id: "coforge",
+      client_id: client,
+      domain_name: domain,
+      control_framework: "ISO 27001",
       assessment_name: assessmentName,
-      cyber_risk_table: prepareDataForApi(tableData, columns),
+      user_id: userId,
+      table: prepareDataForApi(tableData, columns),
     };
     try {
-      const saveContinueResponse = await getHITLSaveContinue(
-        userId,
-        body,
-        token,
-      );
+      const saveContinueResponse = await getHITLSaveContinue(body, token);
       console.log("SaveContinue responsse:", saveContinueResponse);
       toast.success("Data saved successfully!");
     } catch (error) {
-      setLoading(false);
       console.error("Error during API calls:", error);
       toast.error(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -197,27 +198,28 @@ export default function HITLAssessmentTable() {
     if (areAllTextFieldsFilled()) {
       setLoading(true);
       const body = {
-        client_id: "coforge",
+        client_id: client,
+        domain_name: domain,
+        control_framework: "ISO 27001",
         assessment_name: assessmentName,
-        cyber_risk_table: prepareDataForApi(tableData, columns),
+        user_id: userId,
+        table: prepareDataForApi(tableData, columns),
       };
       try {
-        const saveContinueResponse = await getHITLSaveContinue(
-          userId,
-          body,
-          token,
-        );
+        const saveContinueResponse = await getHITLSaveContinue(body, token);
         console.log("SaveContinue responsse:", saveContinueResponse);
         toast.success("Data saved successfully!");
 
         const updateAssessmentBody = {
-          status: "finished",
+          status: "completed",
+          client_id: client,
+          domain_name: domain,
+          control_framework: "ISO 27001",
           assessment_name: assessmentName,
-          client_id: "coforge",
+          user_id: userId,
         };
 
         const updateAssessmentResponse = await updateHITLStatus(
-          userId,
           updateAssessmentBody,
           token,
         );
@@ -348,6 +350,8 @@ export default function HITLAssessmentTable() {
     };
     if (column.toLowerCase().includes("compliance category")) {
       return compliance[value];
+    } else if (completed) {
+      return val;
     } else if (
       column.toLowerCase() === "findings" ||
       column.toLowerCase().includes("recommendations for compliance")
@@ -355,6 +359,7 @@ export default function HITLAssessmentTable() {
       return (
         <EditableTextBox
           value={val}
+          disabled={completed}
           onChange={(e) => handleDataChange(index, column, e.target.value)}
         />
       );
@@ -448,24 +453,45 @@ export default function HITLAssessmentTable() {
     return val;
   };
 
+  // const HandleDomainChange = async (e) => {
+  //   const dom = e.target.value;
+  //   setTableLoading(true);
+  //   setChecked(false);
+  //   setCompleted(false);
+  //   try {
+  //     // const client_id = client;
+  //     const body = {
+  //       client_id: client,
+  //       domain_name: domain,
+  //       control_framework: "ISO 27001",
+  //       assessment_name: assessment_name,
+  //     };
+  //     const result = await fetchAssessmentStatus(body, token);
+  //     const stat = result?.result[0];
+  //     const st = stat?.user_status[`${dom}`];
+  //     await handleTableAPIs(st, dom);
+  //     setDomain(dom);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  //   contentRef.current.scrollIntoView({ behavior: "smooth" });
+  // };
+
   React.useEffect(() => {
     const initializeData = async () => {
       setTableLoading(true);
-      const client_id = "coforge";
-      const result = await fetchHITLAssessmentStatus(
-        client_id,
-        assessmentName,
-        userId,
-        token,
-      );
-      const status = result?.result[0].status;
-      const response = await getHITLTableData(
-        client_id,
-        assessmentName,
-        userId,
-        token,
-      );
-      const finalTable: TableData = response?.result[0]["cyber_risk_table"];
+      setCompleted(false);
+      const body = {
+        client_id: client,
+        domain_name: domain,
+        control_framework: "ISO 27001",
+        assessment_name: assessmentName,
+        user_id: userId,
+      };
+      const result = await fetchHITLAssessmentStatus(body, token);
+      const status = result?.result[0].hitl_status[`${domain}`];
+      const response = await getHITLTableData(body, token);
+      const finalTable: TableData = response?.result;
       const cols = Object.keys(finalTable);
       const newCols = cols.filter((item) => {
         if (
@@ -481,12 +507,12 @@ export default function HITLAssessmentTable() {
       setTableData(transformApiResponse(finalTable));
       setTableLoading(false);
       setChecked(true);
-      if (status === "finished") setCompleted(true);
+      if (status === 2) setCompleted(true);
       console.log("API Response finished");
     };
 
     initializeData();
-  }, []);
+  }, [domain]);
 
   return (
     <div
@@ -569,18 +595,18 @@ export default function HITLAssessmentTable() {
             <Select
               labelId="label1"
               id="demo-simple-select-standard"
-              label="Organizational Controls"
-              defaultValue={"Organizational Controls"}
+              label="Choose your Domain"
+              defaultValue={"Organizational Control"}
               value={domain}
-              disabled
+              onChange={(e) => setDomain(e.target.value)}
             >
-              <MenuItem value={"Organizational Controls"}>
+              <MenuItem value={"Organizational Control"}>
                 Organizational Controls
               </MenuItem>
-              <MenuItem value={"People Controls"}>People Controls</MenuItem>
-              <MenuItem value={"Physical Controls"}>Physical Controls</MenuItem>
-              <MenuItem value={"Technological controls"}>
-                Technological controls
+              <MenuItem value={"People Control"}>People Controls</MenuItem>
+              <MenuItem value={"Physical Control"}>Physical Controls</MenuItem>
+              <MenuItem value={"Technological Control"}>
+                Technological Controls
               </MenuItem>
             </Select>
           </FormControl>

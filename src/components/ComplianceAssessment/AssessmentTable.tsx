@@ -109,6 +109,7 @@ const StyledTableCell = styled(TableCell)(({ index }) => ({
 }));
 
 export default function AssessmentTable() {
+  const client = "cyberrapid";
   const [tableData, setTableData] = React.useState<TableRowData[]>([]);
   const [status, setStatus] = React.useState<string>("pending");
   const [columns, setColumns] = React.useState<string[]>([]);
@@ -148,6 +149,7 @@ export default function AssessmentTable() {
 
     // Populate each column object with row data
     rows.forEach((row, index) => {
+      if (index === 10) return;
       columns.forEach((column) => {
         apiData[column][index] = row[column];
       });
@@ -160,9 +162,12 @@ export default function AssessmentTable() {
     if (token) {
       setLoading(true);
       const body = {
-        client_id: "coforge",
+        client_id: client,
+        domain_name: domain,
+        control_framework: "ISO 27001",
         assessment_name: assessment_name,
-        cyber_risk_table: prepareDataForApi(tableData, columns),
+        table: prepareDataForApi(tableData, columns),
+        // table: tableData,
       };
       try {
         const saveContinueResponse = await getSaveContinue(body, token);
@@ -171,8 +176,10 @@ export default function AssessmentTable() {
 
         const updateAssessmentBody = {
           status: "completed",
+          domain_name: domain,
+          control_framework: "ISO 27001",
           assessment_name: assessment_name,
-          client_id: "coforge",
+          client_id: client,
         };
 
         const updateAssessmentResponse = await updateAssessment(
@@ -198,9 +205,12 @@ export default function AssessmentTable() {
     if (token) {
       setLoading(true);
       const body = {
-        client_id: "coforge",
-        assessment_name: localStorage.getItem("assessment_name"),
-        cyber_risk_table: prepareDataForApi(tableData, columns),
+        client_id: client,
+        domain_name: domain,
+        control_framework: "ISO 27001",
+        assessment_name: assessment_name,
+        table: prepareDataForApi(tableData, columns),
+        // table: tableData,
       };
       try {
         const saveContinueResponse = await getSaveContinue(body, token);
@@ -208,9 +218,11 @@ export default function AssessmentTable() {
         toast.success("Data saved successfully!");
 
         const updateAssessmentBody = {
-          status: "pending",
+          status: "save_for_later",
+          domain_name: domain,
+          control_framework: "ISO 27001",
           assessment_name: assessment_name,
-          client_id: "coforge",
+          client_id: client,
         };
 
         const updateAssessmentResponse = await updateAssessment(
@@ -295,9 +307,15 @@ export default function AssessmentTable() {
       setTimeout(() => {
         setTableLoading(false);
         setLoading(false);
-      }, 10000);
+      }, 1000);
       try {
-        const res = await getPostAssesReport(domain, token);
+        const body = {
+          client_id: client,
+          domain_name: domain,
+          control_framework: "ISO 27001",
+          assessment_name: assessment_name,
+        };
+        const res = await getPostAssesReport(body, token);
         const assessor = res.map(
           (item) => item["Assessor Comment (by CYRAPID AI)"],
         );
@@ -349,8 +367,24 @@ export default function AssessmentTable() {
     const dom = e.target.value;
     setTableLoading(true);
     setChecked(false);
-    handleTableAPIs(status, dom);
-    setDomain(dom);
+    setCompleted(false);
+    try {
+      // const client_id = client;
+      const body = {
+        client_id: client,
+        domain_name: domain,
+        control_framework: "ISO 27001",
+        assessment_name: assessment_name,
+      };
+      const result = await fetchAssessmentStatus(body, token);
+      const stat = result?.result[0];
+      const st = stat?.user_status[`${dom}`];
+      setStatus(st);
+      await handleTableAPIs(st, dom);
+      setDomain(dom);
+    } catch (error) {
+      console.log(error);
+    }
     contentRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -371,10 +405,8 @@ export default function AssessmentTable() {
   };
 
   const renderCell = (value: string, column: string, index: number) => {
-    console.log(column);
     const actualRowIndex = index + (page - 1) * rowsPerPage;
     const val = tableData[actualRowIndex][column] ?? "";
-    console.log(tableData[actualRowIndex], "piyu");
     const compliance = {
       yes: "Compliant",
       no: "Non-compliant",
@@ -398,7 +430,7 @@ export default function AssessmentTable() {
       //     </FormControl>
       //   );
     } else if (column.toLowerCase().includes("(by cyrapid ai)")) {
-      if (status === "completed" || status === "finished") {
+      if (status) {
         return (
           <TextField
             sx={{
@@ -457,16 +489,15 @@ export default function AssessmentTable() {
   };
 
   const handleTableAPIs = async (stat: string, dom: string) => {
-    console.log(stat, dom);
-    const client_id = "coforge";
-    if (stat === "created") {
-      const res = await fetchUpdatedTableData(
-        client_id,
-        assessment_name,
-        dom,
-        token,
-      );
-      const final = res.result[0]?.["cyber_risk_table"];
+    const body = {
+      client_id: client,
+      domain_name: dom,
+      control_framework: "ISO 27001",
+      assessment_name: assessment_name,
+    };
+    if (stat) {
+      const res = await fetchUpdatedTableData(body, token);
+      const final = res.result;
       const cols = Object.keys(final);
       const newCols = cols.filter((item) => {
         if (
@@ -480,16 +511,16 @@ export default function AssessmentTable() {
       setColumns(newCols);
       setTableData(transformApiResponse(final));
       setTableLoading(false);
+      setChecked(true);
       contentRef &&
         contentRef.current &&
         contentRef.current.scrollIntoView({ behavior: "smooth" });
 
-      if (stat === "completed" || stat === "finished") {
-        setChecked(true);
+      if (stat > 1) {
         setCompleted(true);
       }
     } else {
-      const res = await getPreAssesReport(dom, token);
+      const res = await getPreAssesReport(body, token);
       const cols = Object.keys(res[0]);
       const newCols = cols.filter((item) => {
         if (
@@ -515,15 +546,18 @@ export default function AssessmentTable() {
     const initializeData = async () => {
       setTableLoading(true);
       try {
-        const client_id = "coforge";
-        const result = await fetchAssessmentStatus(
-          client_id,
-          assessment_name,
-          token,
-        );
-        const stat = result?.result[0].status;
-        await handleTableAPIs(stat, domain);
-        setStatus(stat);
+        // const client_id = client;
+        const body = {
+          client_id: client,
+          domain_name: domain,
+          control_framework: "ISO 27001",
+          assessment_name: assessment_name,
+        };
+        const result = await fetchAssessmentStatus(body, token);
+        const stat = result?.result[0];
+        const st = stat?.user_status[`${domain}`];
+        await handleTableAPIs(st, domain);
+        setStatus(st);
       } catch (error: any) {
         console.log(error);
       }
@@ -542,7 +576,7 @@ export default function AssessmentTable() {
   // React.useEffect(() => {
   //   const initializeData = async () => {
   //     setTableLoading(true);
-  //     const client_id = "coforge";
+  //     const client_id = client;
   //     const result = await fetchAssessmentStatus(
   //       client_id,
   //       assessment_name,
@@ -684,10 +718,10 @@ export default function AssessmentTable() {
             <Select
               labelId="label1"
               id="demo-simple-select-standard"
-              label="Organizational Controls"
+              label="Choose your Domain"
               defaultValue={"Organizational Controls"}
               value={domain}
-              disabled={completed}
+              // disabled={completed}
               onChange={(e) => handleDomainChange(e)}
             >
               <MenuItem value={"Organizational Control"}>

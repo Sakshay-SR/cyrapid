@@ -1,37 +1,31 @@
 // const base_url = "https://cy-meda.azurewebsites.net";
-// const base_url = "http://4.233.136.185:8500";
-const base_url = 'https://cyberrapidv2.azurewebsites.net'
+const base_url = "http://4.233.136.185:8500";
+// const base_url = 'https://cyberrapidv2.azurewebsites.net'
 
-export async function getPostAssesReport(domain: string, token: string) {
-  const res = await fetch(
-    `${base_url}/dashboard/get_post_assesment_reports/?domain=${domain}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Assuming you need to send a token
-      },
-      body: JSON.stringify({}), // Assuming you might want to send an empty object
+export async function getPostAssesReport(body: object, token: string) {
+  const res = await fetch(`${base_url}/dashboard/get_post_assesment_reports/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
     },
-  );
+    body: JSON.stringify(body), // Assuming you might want to send an empty object
+  });
 
   const resbody = await res.json();
 
   return resbody; // Return the parsed JSON response
 }
 
-export async function getPreAssesReport(domain: string, token: string) {
-  const res = await fetch(
-    `${base_url}/dashboard/get_pre_assesment_reports/?domain=${domain}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Assuming you need to send a token
-      },
-      body: JSON.stringify({}),
+export async function getPreAssesReport(body: object, token: string) {
+  const res = await fetch(`${base_url}/dashboard/get_pre_assesment_reports/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
     },
-  );
+    body: JSON.stringify(body),
+  });
   const resbody = await res.json();
 
   return resbody;
@@ -45,12 +39,10 @@ export async function createAssessment(
   certification: string,
 ) {
   try {
-    const clientId = localStorage.getItem("client_id") || "coforge";
-    const userId = localStorage.getItem("user_id") || "admin@sigmared.ai";
+    const clientId = localStorage.getItem("client_id") || "cyberrapid";
+    // const userId = localStorage.getItem("user_id") || "admin@sigmared.ai";
     const url = `${base_url}/dashboard/create_assesment/?client_id=${encodeURIComponent(
       clientId,
-    )}&user_id=${encodeURIComponent(
-      userId,
     )}&assessment_name=${encodeURIComponent(
       projectName,
     )}&details=${encodeURIComponent(
@@ -122,42 +114,28 @@ export async function updateAssessment(body: object, token: string) {
   return result;
 }
 
-export async function fetchUpdatedTableData(
-  client: string,
-  assesment_name: string,
-  domain: string,
-  token: string,
-) {
-  const response = await fetch(
-    `${base_url}/dashboard/get_table?assessment_name=${assesment_name}&client_id=${client}?domain=${domain}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Assuming you need to send a token
-      },
+export async function fetchUpdatedTableData(body: object, token: string) {
+  const response = await fetch(`${base_url}/dashboard/get_table`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
     },
-  );
+    body: JSON.stringify(body),
+  });
   const result = await response.json();
   return result;
 }
 
-export async function fetchAssessmentStatus(
-  client: string,
-  assesment_name: string,
-  token: string,
-) {
-  const response = await fetch(
-    `${base_url}/dashboard/assessments/status?assessment_name=${assesment_name}&client_id=${client}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Assuming you need to send a token
-      },
-      body: {},
+export async function fetchAssessmentStatus(body: object, token: string) {
+  const response = await fetch(`${base_url}/dashboard/assessments/status`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
     },
-  );
+    body: JSON.stringify(body),
+  });
   const result = await response.json();
   return result;
 }
@@ -177,83 +155,54 @@ export async function getHITLAssessment(client_id: string, token: string) {
   return result;
 }
 
-export async function getHITLTableData(
-  client: string,
-  assesment_name: string,
-  user_id: string,
-  token: string,
-) {
-  const response = await fetch(
-    `${base_url}/hitl/get_table?assessment_name=${assesment_name}&user_id=${user_id}&client_id=${client}`,
-    {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Assuming you need to send a token
-      },
+export async function getHITLTableData(body: object, token: string) {
+  const response = await fetch(`${base_url}/hitl/get_table`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
     },
-  );
+    body: JSON.stringify(body),
+  });
   const result = await response.json();
   return result;
 }
 
-export async function fetchHITLAssessmentStatus(
-  client: string,
-  assesment_name: string,
-  user_id: string,
-  token: string,
-) {
-  const response = await fetch(
-    `${base_url}/hitl/assessments/status?assessment_name=${assesment_name}&user_id=${user_id}&client_id=${client}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Assuming you need to send a token
-      },
-      body: {},
+export async function fetchHITLAssessmentStatus(body: object, token: string) {
+  const response = await fetch(`${base_url}/hitl/assessments/status`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
     },
-  );
+    body: JSON.stringify(body),
+  });
   const result = await response.json();
   return result;
 }
 
-export async function getHITLSaveContinue(
-  user_id: string,
-  body: object,
-  token: string,
-) {
-  const response = await fetch(
-    `${base_url}/hitl/save_table?user_id=${user_id}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Assuming you need to send a token
-      },
-      body: JSON.stringify(body),
+export async function getHITLSaveContinue(body: object, token: string) {
+  const response = await fetch(`${base_url}/hitl/save_table`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
     },
-  );
+    body: JSON.stringify(body),
+  });
   const result = await response.json();
   return result;
 }
 
-export async function updateHITLStatus(
-  user_id: string,
-  body: object,
-  token: string,
-) {
-  const response = await fetch(
-    `${base_url}/hitl/update_assessment_status/?user_id=${user_id}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Assuming you need to send a token
-      },
-      body: JSON.stringify(body),
+export async function updateHITLStatus(body: object, token: string) {
+  const response = await fetch(`${base_url}/hitl/update_assessment_status/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`, // Assuming you need to send a token
     },
-  );
+    body: JSON.stringify(body),
+  });
   const result = await response.json();
   return result;
 }

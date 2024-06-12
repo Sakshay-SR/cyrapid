@@ -56,7 +56,7 @@ export default function LoginPage() {
     //     // Assuming the API returns a JSON object with a key "authenticated" that is true if credentials are valid
     //     if (data) {
     //       localStorage.setItem('user_id', email);
-    //       localStorage.setItem('client_id', 'coforge');
+    //       localStorage.setItem('client_id', 'cyberrapid');
     //       localStorage.setItem('auth', 'true');
     //       navigate('/');
     //     } else {

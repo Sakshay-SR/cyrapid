@@ -20,7 +20,7 @@ function HitlInventoryTable({ token }: tableProps) {
   const [assessments, setAssessments] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
-      const client_id = "coforge";
+      const client_id = "cyberrapid";
       try {
         const res = await getHITLAssessment(client_id, token);
         console.log(res, "worked");
@@ -77,7 +77,7 @@ function HitlInventoryTable({ token }: tableProps) {
                       }}
                       className="text-xs"
                     >
-                      {assessment.status === "completed"
+                      {assessment.overall_status === "completed"
                         ? "Completed by CYRAPID AI and Pending for Human Assessor"
                         : "Completed by CYRAPID AI and Human Assessor"}
                     </span>
@@ -87,7 +87,7 @@ function HitlInventoryTable({ token }: tableProps) {
                       className="flex w-full items-center justify-center rounded-lg px-8 py-4 text-center text-xs font-bold text-white hover:bg-blue-700"
                       style={{
                         backgroundColor:
-                          assessment.status === "completed"
+                          assessment.overall_status === "completed"
                             ? "#4285f4"
                             : "#808080",
                       }}

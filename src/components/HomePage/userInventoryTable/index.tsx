@@ -18,14 +18,26 @@ function UserInventoryTable({ token }: tableProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [assessments, setAssessments] = useState([]);
+  const [status, setStatus] = useState("Pending");
   useEffect(() => {
     const fetchData = async () => {
-      const client_id = "coforge";
+      const client_id = "cyberrapid";
       try {
         const res = await getAssessment(client_id, token);
-        console.log(res, "worked");
+        // const body = {
+        //   client_id: "cyberrapid",
+        //   domain_name: domain,
+        //   control_framework: "ISO 27001",
+        //   assessment_name: assessment_name,
+        // };
+        // const result = await fetchAssessmentStatus(body, token);
+        // const stat = result?.result[0];
+        // const st = stat?.user_status;
         if (res?.result) {
           setAssessments(res.result); // Assume res is an array of assessments
+          // const sum = Object.values(st).reduce((partial, a) => partial + a, 0);
+          // if (sum === 0) setStatus("Created");
+          // else if (sum === 8) setStatus("Completed");
         }
       } catch (error) {
         console.error("Failed to fetch assessments:", error);
@@ -68,13 +80,17 @@ function UserInventoryTable({ token }: tableProps) {
                   <TableCell>
                     {assessment.assessment_name.toUpperCase()}
                   </TableCell>
-                  <TableCell style={{maxWidth: '400px' ,whiteSpace: 'pre-wrap' }}>{assessment.descriptions}</TableCell>
+                  <TableCell
+                    style={{ maxWidth: "400px", whiteSpace: "pre-wrap" }}
+                  >
+                    {assessment.descriptions}
+                  </TableCell>
                   <TableCell>
                     <span
                       style={{
                         backgroundColor:
                           assessment.status === "created"
-                            ? '#fbbf24'
+                            ? "#fbbf24"
                             : assessment.status === "pending"
                               ? "#f87171"
                               : "#34d399",
